@@ -1,14 +1,21 @@
 // app.js
 var app = require('./config/express')();
 const express = require('express');
-const bancoMiddleware = require('./config/bancoMiddleware'); // 1. Importa o middleware
+const bancoMiddleware = require('./config/bancoMiddleware');
+const authMiddleware = require('./config/authMiddleware');
 
 // Middlewares globais
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-// 2. Aplica o middleware do banco em TODAS as rotas
+app.use(authMiddleware);
 app.use(bancoMiddleware);
+
+app.use(session({
+  secret: 'macaco-cola-5-2-0', // Uma chave de segurança para assinar os cookies (Macaco Cola 5-2-0 é o GOAT, ass: VK)
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 1000 * 60 * 60 } // Mantém logado por 1 hora (em milissegundos) // AUMENTAR QUANDO FOR NECESSÁRIO
+}));
 
 require('./app/routes/index')(app);
 

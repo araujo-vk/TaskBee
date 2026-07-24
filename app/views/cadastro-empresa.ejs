@@ -1,0 +1,24 @@
+<p>Cadastro de Empresa</p>
+
+<% if (typeof mensagem !== 'undefined' && mensagem) { %>
+    <p style="color: green;"><%= mensagem %></p>
+<% } %>
+
+<form action="/cadastro-empresa" method="POST">
+    <label for="nome">Nome da Empresa:</label>
+    <input type="text" id="nome" name="nome" required><br>
+
+    <label for="cnpj">CNPJ:</label>
+    <input type="text" id="cnpj" name="cnpj" required><br>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required><br>
+
+    <label for="senha">Senha:</label>
+    <input type="password" id="senha" name="senha" required><br>
+
+    <button type="submit">Cadastrar</button>
+</form>
+
+<a href="/cadastro">Precisa cadastrar um usuário?</a><br>
+<a href="/login">Já possui uma conta? Faça login</a>

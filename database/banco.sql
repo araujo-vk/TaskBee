@@ -7,12 +7,11 @@ USE banco;
 CREATE TABLE tenants (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(150) NOT NULL,
-    subdomain VARCHAR(100) UNIQUE NOT NULL,
-    plan VARCHAR(50) DEFAULT 'free',
+    cnpj VARCHAR(18) UNIQUE NOT NULL, -- Permite buscar pelo CNPJ no Login/Cadastro
+    email VARCHAR(150),
     is_active BOOLEAN DEFAULT TRUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
-
 -- =========================
 -- ACESSOS E ESTRUTURA ORGANIZACIONAL
 -- =========================
@@ -375,3 +374,13 @@ CREATE TABLE audit_logs (
     FOREIGN KEY (tenant_id) REFERENCES tenants(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- VALORES TESTE PARA SEREM USADOS DURANTE DESENVOLVIMENTO
+
+INSERT INTO roles (id, name) VALUES 
+(1, 'admin'),
+(2, 'gestor'),
+(3, 'tecnico'),
+(4, 'usuario');
+
+select * from pending_users;

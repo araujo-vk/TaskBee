@@ -1,0 +1,21 @@
+<header style="background-color: #f4f4f4; padding: 10px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <strong>Sistema ITSM</strong>
+    </div>
+
+    <% if (typeof usuario !== 'undefined' && usuario) { %>
+        <div style="text-align: right;">
+            <span>Conta ativa: <strong><%= usuario.nome %></strong></span>
+            
+            <small style="color: #666; display: block;">
+                Perfil: 
+                <% if (usuario.role === 1) { %> Administrator <% } %>
+                <% if (usuario.role === 2) { %> Gestor <% } %>
+                <% if (usuario.role === 3) { %> Técnico <% } %>
+                <% if (usuario.role === 4) { %> Usuário <% } %>
+            </small>
+
+            <a href="/logout" style="color: red; text-decoration: none; font-size: 12px;">[Sair / Logout]</a>
+        </div>
+    <% } %>
+</header>

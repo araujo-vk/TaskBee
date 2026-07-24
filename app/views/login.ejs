@@ -1,2 +1,69 @@
 <p>login</p>
 
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema ITSM</title>
+</head>
+<body>
+
+    <h2>Acesso ao Sistema</h2>
+
+    <% if (typeof erro !== 'undefined' && erro) { %>
+        <p style="color: red;"><%= erro %></p>
+    <% } %>
+
+    <% if (typeof mensagem !== 'undefined' && mensagem) { %>
+        <p style="color: green;"><%= mensagem %></p>
+    <% } %>
+
+    <form action="/login" method="POST">
+        <div>
+            <label for="cnpj_empresa">CNPJ da Empresa:</label><br>
+            <input 
+                type="text" 
+                id="cnpj_empresa" 
+                name="cnpj_empresa" 
+                placeholder="00.000.000/0001-00" 
+                required
+            >
+        </div>
+        <br>
+
+        <div>
+            <label for="email">E-mail:</label><br>
+            <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                placeholder="seu.email@empresa.com" 
+                required
+            >
+        </div>
+        <br>
+
+        <div>
+            <label for="senha">Senha:</label><br>
+            <input 
+                type="password" 
+                id="senha" 
+                name="senha" 
+                placeholder="******" 
+                required
+            >
+        </div>
+        <br>
+
+        <button type="submit">Entrar</button>
+    </form>
+
+    <hr>
+
+    <p>Ainda não possui acesso?</p>
+    <a href="/cadastro">Solicitar cadastro de usuário</a><br>
+    <a href="/cadastro-empresa">Cadastrar uma nova empresa</a>
+
+</body>
+</html>

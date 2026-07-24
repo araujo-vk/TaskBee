@@ -383,4 +383,5 @@ INSERT INTO roles (id, name) VALUES
 (3, 'tecnico'),
 (4, 'usuario');
 
-select * from pending_users;
+
+

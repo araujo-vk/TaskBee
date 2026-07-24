@@ -1,20 +1,25 @@
 // config/authMiddleware.js
 module.exports = function (req, res, next) {
-  // 1. Defina as rotas que NÃO precisam de login (rotas públicas)
-  const rotasPublicas = ['/login', '/cadastro', '/cadastro-empresa'];
+  // 1. Sempre que houver uma sessão ativa, repassa o usuário para o EJS (seja rota pública ou privada)
+  if (req.session && req.session.usuarioLogado) {
+    res.locals.usuario = req.session.usuarioLogado;
+  } else {
+    res.locals.usuario = null;
+  }
 
-  // Se a rota atual estiver na lista de públicas, deixa passar direto
+  // 2. Lista de rotas públicas (que não exigem login obrigatório)
+  const rotasPublicas = ['/login', '/cadastro', '/cadastro-empresa', '/index', '/'];
+
+  // Se for rota pública, libera o acesso imediatamente
   if (rotasPublicas.includes(req.path)) {
     return next();
   }
 
-  // 2. Para todas as outras rotas, verifica se está logado
+  // 3. Se for rota privada e houver usuário logado, libera o acesso
   if (req.session && req.session.usuarioLogado) {
-    // Passa os dados para o EJS usar na tela
-    res.locals.usuario = req.session.usuarioLogado; 
     return next();
   }
-  
-  // 3. Se não for rota pública e não estiver logado, manda pro login
+
+  // 4. Se for rota privada e não estiver logado, manda pro login
   res.redirect('/login');
 };

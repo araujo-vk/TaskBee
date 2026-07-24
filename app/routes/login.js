@@ -1,8 +1,6 @@
 module.exports = function (app) {
-  app.get("/login", function (request, response) {
-    response.render("login");
-  });
-
+  
+  // Apenas UMA rota GET
   app.get("/login", function (req, res) {
     res.render("login", { erro: null });
   });
@@ -25,12 +23,12 @@ module.exports = function (app) {
         [email, tenantId]
       );
 
-      // 3. Verifica se o usuário existe e se a senha bate (estamos usando texto puro conforme combinamos)
+      // 3. Verifica se o usuário existe e se a senha bate
       if (usuario.length === 0 || usuario[0].password_hash !== senha) {
         return res.render("login", { erro: "Email ou senha incorretos." });
       }
 
-      // 4. SUCESSO! Salva os dados na sessão
+      // 4. Salva os dados na sessão
       req.session.usuarioLogado = {
         id: usuario[0].id,
         nome: usuario[0].name,
@@ -38,8 +36,14 @@ module.exports = function (app) {
         tenantId: usuario[0].tenant_id
       };
 
-      // Redireciona para o painel principal (dashboard)
-      res.redirect("/dashboard");
+      // 5. GARANTE que a sessão foi salva antes de mudar de página!
+      req.session.save((err) => {
+        if (err) {
+          console.error("Erro ao salvar sessão:", err);
+          return res.render("login", { erro: "Erro ao criar sessão." });
+        }
+        res.redirect("/index");
+      });
 
     } catch (error) {
       console.error(error);
@@ -49,7 +53,8 @@ module.exports = function (app) {
 
   // Rota para sair do sistema (Logout)
   app.get("/logout", function (req, res) {
-    req.session.destroy(); // Destrói a sessão
-    res.redirect("/login");
+    req.session.destroy(() => {
+      res.redirect("/login");
+    });
   });
 };

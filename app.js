@@ -3,20 +3,25 @@ var app = require('./config/express')();
 const express = require('express');
 const bancoMiddleware = require('./config/bancoMiddleware');
 const authMiddleware = require('./config/authMiddleware');
+const session = require('express-session');
 
-// Middlewares globais
+// 1. Middlewares de requisição
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// 2. SESSÃO VEM ANTES DA AUTENTICAÇÃO!
+app.use(session({
+  secret: 'macaco-cola-5-2-0', // Uma chave de segurança para assinar os cookies
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 1000 * 60 * 60 } // Mantém logado por 1 hora
+}));
+
+// 3. Agora sim, aplicamos o bloqueio de autenticação e o banco
 app.use(authMiddleware);
 app.use(bancoMiddleware);
 
-app.use(session({
-  secret: 'macaco-cola-5-2-0', // Uma chave de segurança para assinar os cookies (Macaco Cola 5-2-0 é o GOAT, ass: VK)
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 } // Mantém logado por 1 hora (em milissegundos) // AUMENTAR QUANDO FOR NECESSÁRIO
-}));
-
+// ... (O resto do seu código com require('./app/routes/index')(app) continua igual daqui para baixo)
 require('./app/routes/index')(app);
 
 //Outras rotas

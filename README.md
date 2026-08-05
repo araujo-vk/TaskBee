@@ -99,7 +99,7 @@ npm install express-session
 * Abra o arquivo `db.js` na raiz do projeto e ajuste as credenciais do seu MySQL (`host`, `user`, `password`).
 
 
-1. **Iniciar o Servidor:**
+4. **Iniciar o Servidor:**
 ```bash
 node app.js
 

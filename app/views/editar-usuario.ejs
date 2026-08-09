@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Usuário</title>
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <main style="padding: 20px;">
+        <h2>Editar Usuário: <%= usuario.nome %></h2>
+        <p><strong>ID do Usuário:</strong> <%= usuario.id %></p>
+
+        <form action="/gestao-usuarios/editar/<%= usuario.id %>" method="POST">
+            <div>
+                <label for="nome">Nome:</label><br>
+                <input type="text" id="nome" name="nome" value="<%= usuario.nome %>" required>
+            </div>
+            <br>
+
+            <div>
+                <label for="email">E-mail:</label><br>
+                <input type="email" id="email" name="email" value="<%= usuario.email %>" required>
+            </div>
+            <br>
+
+            <div>
+                <label for="department_id">Departamento:</label><br>
+                <select id="department_id" name="department_id">
+                    <option value="">-- Selecione um Departamento --</option>
+                    <% departamentos.forEach(dep => { %>
+                        <option value="<%= dep.id %>" <%= usuario.department_id == dep.id ? 'selected' : '' %>>
+                            <%= dep.name %>
+                        </option>
+                    <% }) %>
+                </select>
+            </div>
+            <br>
+
+            <div>
+                <label for="role_id">Nível de Acesso (Perfil):</label><br>
+                <select id="role_id" name="role_id" required>
+                    <% roles.forEach(role => { %>
+                        <option value="<%= role.id %>" <%= usuario.role_id == role.id ? 'selected' : '' %>>
+                            <%= role.name %>
+                        </option>
+                    <% }) %>
+                </select>
+            </div>
+            <br>
+
+            <div>
+                <label for="is_active">Status da Conta:</label><br>
+                <select id="is_active" name="is_active" required>
+                    <option value="1" <%= usuario.is_active == 1 ? 'selected' : '' %>>Ativo</option>
+                    <option value="0" <%= usuario.is_active == 0 ? 'selected' : '' %>>Inativo</option>
+                </select>
+            </div>
+            <br>
+
+            <button type="submit">Salvar Alterações</button>
+            <a href="/gestao-usuarios" style="margin-left: 15px;">Cancelar</a>
+        </form>
+
+        <br><hr><br>
+
+        <a href="/gestao-usuarios/deletar/<%= usuario.id %>" 
+           onclick="return confirm('Tem certeza que deseja deletar este usuário? Esta ação não pode ser desfeita.');" 
+           style="color: red; font-weight: bold;">
+            [Deletar Usuário]
+        </a>
+    </main>
+
+</body>
+</html>

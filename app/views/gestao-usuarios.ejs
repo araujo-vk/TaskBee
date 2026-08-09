@@ -3,43 +3,92 @@
 <p>Tenant ID: <%= tenantId %></p>
 
 <p>Tabela de Usuários ativos</p>
-<table>
-  <tr>
-    <th>Nome</th>
-    <th>Departamento</th>
-    <th>Nível de Acesso</th>
-    <th>Email</th>
-    <th>Data de Criação</th>
-    <th>Editar</th>
-  </tr>
-
-  <% usuariosAtivos.forEach(usuario => { %>
+<table border="1">
     <tr>
-      <td><%= usuario.nome %></td>
-      <td><%= usuario.departamento || 'Sem departamento' %></td>
-      <td><%= usuario.role %></td>
-      <td><%= usuario.email %></td>
-      <td><%= usuario.dataCriacao ? new Date(usuario.dataCriacao).toLocaleDateString('pt-BR') : '' %></td>
-      <td><a href="/gestao-usuarios/editar/<%= usuario.id %>">Editar</a></td>
+        <th><a href="/gestao-usuarios?sortAtivos=nome&orderAtivos=<%= sortAtivosAtual === 'nome' && orderAtivosAtual === 'asc' ? 'desc' : 'asc' %>">Nome</a></th>
+        <th><a href="/gestao-usuarios?sortAtivos=departamento&orderAtivos=<%= sortAtivosAtual === 'departamento' && orderAtivosAtual === 'asc' ? 'desc' : 'asc' %>">Departamento</a></th>
+        <th><a href="/gestao-usuarios?sortAtivos=role&orderAtivos=<%= sortAtivosAtual === 'role' && orderAtivosAtual === 'asc' ? 'desc' : 'asc' %>">Nível de Acesso</a></th>
+        <th><a href="/gestao-usuarios?sortAtivos=email&orderAtivos=<%= sortAtivosAtual === 'email' && orderAtivosAtual === 'asc' ? 'desc' : 'asc' %>">E-mail</a></th>
+        <th><a href="/gestao-usuarios?sortAtivos=data&orderAtivos=<%= sortAtivosAtual === 'data' && orderAtivosAtual === 'asc' ? 'desc' : 'asc' %>">Data de Criação</a></th>
+    <th>Editar</th>
     </tr>
-  <% }) %>
-</table>
 
-<p>Tabela de Usuários pendentes</p>
-<table>
-  <tr>
-    <th>Nome</th>
-    <th>Departamento</th>
-    <th>Nível de Acesso</th>
-    <th>Email</th>
-  </tr>
-
-  <% usuariosPendentes.forEach(usuario => { %>
+    <% usuariosAtivos.forEach(usuario => { %>
     <tr>
         <td><%= usuario.nome %></td>
         <td><%= usuario.departamento || 'Sem departamento' %></td>
         <td><%= usuario.role %></td>
         <td><%= usuario.email %></td>
+        <td><%= usuario.dataCriacao ? new Date(usuario.dataCriacao).toLocaleDateString('pt-BR') : '' %></td>
+        <td><a href="/gestao-usuarios/editar/<%= usuario.id %>">Editar</a></td>
     </tr>
-  <% }) %>
+    <% }) %>
+</table>
+
+<h2>Usuários Pendentes de Aprovação</h2>
+<table border="1">
+    <thead>
+        <tr>
+            <%
+                const ativosParams = `sortAtivos=${sortAtivosAtual}&orderAtivos=${orderAtivosAtual}`;
+            %>
+
+            <th>
+                <a href="/gestao-usuarios?<%= ativosParams %>&sortPendentes=nome&orderPendentes=<%= sortPendentesAtual === 'nome' && orderPendentesAtual === 'asc' ? 'desc' : 'asc' %>">
+                    Nome
+                </a>
+            </th>
+            <th>
+                <a href="/gestao-usuarios?<%= ativosParams %>&sortPendentes=departamento&orderPendentes=<%= sortPendentesAtual === 'departamento' && orderPendentesAtual === 'asc' ? 'desc' : 'asc' %>">
+                    Departamento
+                </a>
+            </th>
+            <th>
+                <a href="/gestao-usuarios?<%= ativosParams %>&sortPendentes=role&orderPendentes=<%= sortPendentesAtual === 'role' && orderPendentesAtual === 'asc' ? 'desc' : 'asc' %>">
+                    Perfil Solicitado
+                </a>
+            </th>
+            <th>
+                <a href="/gestao-usuarios?<%= ativosParams %>&sortPendentes=email&orderPendentes=<%= sortPendentesAtual === 'email' && orderPendentesAtual === 'asc' ? 'desc' : 'asc' %>">
+                    E-mail
+                </a>
+            </th>
+            <th>
+                <a href="/gestao-usuarios?<%= ativosParams %>&sortPendentes=data&orderPendentes=<%= sortPendentesAtual === 'data' && orderPendentesAtual === 'asc' ? 'desc' : 'asc' %>">
+                    Data da Solicitação
+                </a>
+            </th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (typeof usuariosPendentes !== 'undefined' && usuariosPendentes.length > 0) { %>
+            <% usuariosPendentes.forEach(usuario => { %>
+                <tr>
+                    <td><%= usuario.nome %></td>
+                    <td><%= usuario.departamento || 'Não informado' %></td>
+                    <td><%= usuario.role %></td>
+                    <td><%= usuario.email %></td>
+                    <td><%= usuario.dataCriacao.toLocaleDateString('pt-BR') %></td>
+                    <td>
+                        <form action="/gestao-usuarios/processar" method="POST" style="display:inline;">
+                            <input type="hidden" name="usuarioId" value="<%= usuario.id %>">
+                            <input type="hidden" name="acao" value="aceitar">
+                            <button type="submit" style="color: green;">Aceitar</button>
+                        </form>
+                        
+                        <form action="/gestao-usuarios/processar" method="POST" style="display:inline;">
+                            <input type="hidden" name="usuarioId" value="<%= usuario.id %>">
+                            <input type="hidden" name="acao" value="rejeitar">
+                            <button type="submit" style="color: red;">Rejeitar</button>
+                        </form>
+                    </td>
+                </tr>
+            <% }); %>
+        <% } else { %>
+            <tr>
+                <td colspan="6" align="center">Nenhum pedido de vinculação pendente.</td>
+            </tr>
+        <% } %>
+    </tbody>
 </table>

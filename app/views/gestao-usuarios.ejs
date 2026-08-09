@@ -1,1 +1,45 @@
 <p>gestão de usuários</p>
+
+<p>Tenant ID: <%= tenantId %></p>
+
+<p>Tabela de Usuários ativos</p>
+<table>
+  <tr>
+    <th>Nome</th>
+    <th>Departamento</th>
+    <th>Nível de Acesso</th>
+    <th>Email</th>
+    <th>Data de Criação</th>
+    <th>Editar</th>
+  </tr>
+
+  <% usuariosAtivos.forEach(usuario => { %>
+    <tr>
+      <td><%= usuario.nome %></td>
+      <td><%= usuario.departamento || 'Sem departamento' %></td>
+      <td><%= usuario.role %></td>
+      <td><%= usuario.email %></td>
+      <td><%= usuario.dataCriacao ? new Date(usuario.dataCriacao).toLocaleDateString('pt-BR') : '' %></td>
+      <td><a href="/gestao-usuarios/editar/<%= usuario.id %>">Editar</a></td>
+    </tr>
+  <% }) %>
+</table>
+
+<p>Tabela de Usuários pendentes</p>
+<table>
+  <tr>
+    <th>Nome</th>
+    <th>Departamento</th>
+    <th>Nível de Acesso</th>
+    <th>Email</th>
+  </tr>
+
+  <% usuariosPendentes.forEach(usuario => { %>
+    <tr>
+        <td><%= usuario.nome %></td>
+        <td><%= usuario.departamento || 'Sem departamento' %></td>
+        <td><%= usuario.role %></td>
+        <td><%= usuario.email %></td>
+    </tr>
+  <% }) %>
+</table>

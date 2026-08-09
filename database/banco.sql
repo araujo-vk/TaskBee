@@ -384,6 +384,8 @@ INSERT INTO roles (id, name) VALUES
 (4, 'usuario');
 
 select * from users;
+select * from tenants;
+
 			
 
 

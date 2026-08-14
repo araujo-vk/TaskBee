@@ -154,10 +154,10 @@ CREATE TABLE tickets (
     tenant_id INT NOT NULL,
     title VARCHAR(200) NOT NULL,
     description TEXT NOT NULL,
-    type ENUM('incidente','requisicao','problema','mudanca') NOT NULL,
+    type ENUM('incidente','requisicao','problema','mudanca','outro') NOT NULL,
     category_id INT,
     priority_id INT,
-    status_id INT NOT NULL,
+    status_id INT NOT NULL DEFAULT 1, 
     service_id INT NULL,
     requester_id INT NOT NULL,
     assigned_to INT NULL,
@@ -375,17 +375,116 @@ CREATE TABLE audit_logs (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
--- VALORES TESTE PARA SEREM USADOS DURANTE DESENVOLVIMENTO
+-- Disable foreign key checks temporarily for a clean insert process
+SET FOREIGN_KEY_CHECKS = 0;
 
-INSERT INTO roles (id, name) VALUES 
+-- 1. CLEAR TABLES (Optional - Run these if you need a fresh start)
+TRUNCATE TABLE ai_classifications;
+TRUNCATE TABLE ticket_history;
+TRUNCATE TABLE ticket_comments;
+TRUNCATE TABLE sla_tracking;
+TRUNCATE TABLE tickets;
+TRUNCATE TABLE services;
+TRUNCATE TABLE service_categories;
+TRUNCATE TABLE sla_policies;
+TRUNCATE TABLE statuses;
+TRUNCATE TABLE priorities;
+TRUNCATE TABLE ticket_categories;
+TRUNCATE TABLE pending_users;
+TRUNCATE TABLE users;
+TRUNCATE TABLE departments;
+TRUNCATE TABLE roles;
+TRUNCATE TABLE tenants;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- =================================================================
+-- 2. TENANTS (Empresas/Clientes)
+-- =================================================================
+INSERT INTO tenants (id, name, cnpj, email, is_active) VALUES 
+(1, 'Ignis Tech Solutions', '12.345.678/0001-90', 'contato@ignis.com', TRUE),
+(2, 'Acme Corporation', '98.765.432/0001-10', 'contato@acme.com', TRUE);
+
+-- =================================================================
+-- 3. ROLES (Perfis de Acesso)
+-- =================================================================
+-- Assuming you already have these from your provided snippet, ensuring they exist:
+INSERT IGNORE INTO roles (id, name) VALUES 
 (1, 'admin'),
 (2, 'gestor'),
 (3, 'tecnico'),
 (4, 'usuario');
 
-select * from users;
-select * from tenants;
+-- =================================================================
+-- 4. DEPARTMENTS (Departamentos)
+-- =================================================================
+INSERT INTO departments (id, tenant_id, name) VALUES 
+(1, 1, 'Tecnologia da Informação'),
+(2, 1, 'Recursos Humanos'),
+(3, 1, 'Financeiro e Contabilidade'),
+(4, 2, 'Suporte Técnico'),
+(5, 2, 'Operações');
 
-			
+-- =================================================================
+-- 5. USERS (Usuários)
+-- Password for all is '123456' (Use secure hashes in production)
+-- =================================================================
+-- Tenant 1 (Ignis Tech)
+INSERT INTO users (id, tenant_id, name, email, password_hash, role_id, department_id, is_active) VALUES 
+(1, 1, 'Administrador Geral', 'admin@ignis.com', '123456', 1, 1, TRUE),
+(2, 1, 'Carlos Silva (Gestor TI)', 'gestor@ignis.com', '123456', 2, 1, TRUE),
+(3, 1, 'Roberto Santos (Técnico)', 'tecnico@ignis.com', '123456', 3, 1, TRUE),
+(4, 1, 'Ana Souza (Solicitante)', 'ana.souza@ignis.com', '123456', 4, 2, TRUE);
+
+-- Tenant 2 (Acme Corp)
+INSERT INTO users (id, tenant_id, name, email, password_hash, role_id, department_id, is_active) VALUES 
+(5, 2, 'Marcos Oliveira (Admin)', 'admin@acme.com', '123456', 1, 4, TRUE),
+(6, 2, 'Fernanda Costa (User)', 'fernanda@acme.com', '123456', 4, 5, TRUE);
+
+-- =================================================================
+-- 6. PENDING USERS (Usuários Pendentes)
+-- =================================================================
+INSERT INTO pending_users (id, tenant_id, name, email, password_hash, role_id, department_id, status) VALUES 
+(1, 1, 'Fernando Mendes', 'fernando.mendes@ignis.com', '123456', 4, 2, 'pendente'),
+(2, 2, 'João Pedro', 'joao@acme.com', '123456', 4, 5, 'pendente');
+
+-- =================================================================
+-- 7. CLASSIFICATIONS (Categorias, Prioridades e Status)
+-- =================================================================
+INSERT INTO ticket_categories (id, tenant_id, name, parent_id) VALUES 
+(1, 1, 'Hardware', NULL),
+(2, 1, 'Software', NULL),
+(3, 1, 'Redes', NULL),
+(4, 1, 'Impressoras', 1);
+
+INSERT INTO priorities (id, tenant_id, name, weight) VALUES 
+(1, 1, 'Baixa', 1),
+(2, 1, 'Média', 2),
+(3, 1, 'Alta', 3),
+(4, 1, 'Crítica', 4);
+
+-- Core Statuses expected by the application logic
+INSERT INTO statuses (id, tenant_id, name) VALUES 
+(1, 1, 'Aberto'),
+(2, 1, 'Em Andamento'),
+(3, 1, 'Resolvido'),
+(4, 1, 'Fechado');
+
+-- =================================================================
+-- 8. TICKETS (Chamados de Teste)
+-- =================================================================
+-- Assuming status_id corresponds to the statuses inserted above
+INSERT INTO tickets (id, tenant_id, title, description, type, category_id, priority_id, status_id, requester_id, assigned_to, created_at) VALUES 
+(1, 1, 'Impressora do RH não conecta', 'A impressora HP parou de responder.', 'incidente', 4, 2, 1, 4, NULL, DATE_SUB(NOW(), INTERVAL 2 DAY)),
+(2, 1, 'Solicitação de monitor extra', 'Preciso de um segundo monitor.', 'requisicao', 1, 1, 2, 4, 3, DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(3, 1, 'Sistema ERP lento', 'Demora para gerar relatórios.', 'problema', 2, 3, 1, 4, NULL, DATE_SUB(NOW(), INTERVAL 3 HOUR)),
+(4, 1, 'Atualização de Firewall', 'Manutenção programada.', 'mudanca', 3, 4, 3, 1, 2, DATE_SUB(NOW(), INTERVAL 5 DAY));
+
+-- =================================================================
+-- 9. TICKET COMMENTS (Comentários em Chamados)
+-- =================================================================
+INSERT INTO ticket_comments (tenant_id, ticket_id, user_id, comment, is_internal) VALUES
+(1, 2, 3, 'O monitor foi solicitado ao fornecedor.', FALSE),
+(1, 2, 2, 'Aprovação de orçamento pendente.', TRUE);
 
 

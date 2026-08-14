@@ -1,1 +1,19 @@
 <p>novo chamado</p>
+
+<form action="/chamados/novo" method="POST">
+    <label for="titulo">Título do Chamado:</label>
+    <input type="text" id="titulo" name="titulo" required>
+
+    <label for="descricao">Descrição:</label>
+    <textarea id="descricao" name="descricao" required></textarea>
+
+    <label for="tipo">Tipo de Chamado:</label>
+    <select id="tipo" name="tipo" required>
+        <option value="incidente">Incidente</option>
+        <option value="requisicao">Requisição</option>
+        <option value="problema">Problema</option>
+        <option value="mudanca">Mudança</option>
+        <option value="outro">Outro</option>
+    </select>
+    <button type="submit">Enviar</button>
+</form>     

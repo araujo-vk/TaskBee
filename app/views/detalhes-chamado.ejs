@@ -1,1 +1,35 @@
 <p>detalhes do chamado</p>
+
+<%- include('partials/header') %>
+
+<main style="padding: 20px;">
+    <h2>Detalhes do Chamado #<%= chamado.id %></h2>
+
+    <p><strong>Título:</strong> <%= chamado.title %></p>
+    <p><strong>Solicitante:</strong> <%= chamado.solicitante %> (<%= chamado.email_solicitante %>)</p>
+    <p><strong>Tipo:</strong> <%= chamado.type %></p>
+    <p><strong>Estado Atual:</strong> <%= chamado.status %></p>
+    <p><strong>Data de Abertura:</strong> <%= new Date(chamado.created_at).toLocaleString('pt-PT') %></p>
+
+    <hr>
+
+    <h3>Descrição</h3>
+    <p style="background: #f9f9f9; padding: 15px; border-radius: 5px;"><%= chamado.description %></p>
+
+    <% if (usuario && usuario.role !== 4) { %>
+        <hr>
+        <h3>Alterar Estado</h3>
+        <form action="/chamados/<%= chamado.id %>/status" method="POST">
+            <select name="status_id" id="status_id" required>
+                <option value="1" <%= chamado.status_id == 1 ? 'selected' : '' %>>Aberto</option>
+                <option value="2" <%= chamado.status_id == 2 ? 'selected' : '' %>>Em Andamento</option>
+                <option value="3" <%= chamado.status_id == 3 ? 'selected' : '' %>>Resolvido</option>
+                <option value="4" <%= chamado.status_id == 4 ? 'selected' : '' %>>Fechado</option>
+            </select>
+            <button type="submit">Atualizar</button>
+        </form>
+    <% } %>
+
+    <br><br>
+    <a href="/chamados">← Voltar para a lista de chamados</a>
+</main>

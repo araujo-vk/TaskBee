@@ -1,1 +1,41 @@
 <p>chamados</p>
+
+<%- include('partials/header') %>
+
+<main style="padding: 20px;">
+    <h2>Lista de Chamados</h2>
+    <a href="/chamados/novo" style="display: inline-block; margin-bottom: 15px;">+ Criar Novo Chamado</a>
+
+    <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #eee;">
+                <th>ID</th>
+                <th>Título</th>
+                <th>Solicitante</th>
+                <th>Tipo</th>
+                <th>Estado</th>
+                <th>Data</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (chamados.length === 0) { %>
+                <tr>
+                    <td colspan="7" style="text-align: center;">Nenhum chamado encontrado.</td>
+                </tr>
+            <% } else { %>
+                <% chamados.forEach(c => { %>
+                    <tr>
+                        <td>#<%= c.id %></td>
+                        <td><%= c.title %></td>
+                        <td><%= c.solicitante %></td>
+                        <td><%= c.type %></td>
+                        <td><strong><%= c.status %></strong></td>
+                        <td><%= new Date(c.created_at).toLocaleDateString('pt-PT') %></td>
+                        <td><a href="/chamados/<%= c.id %>">Ver Detalhes</a></td>
+                    </tr>
+                <% }) %>
+            <% } %>
+        </tbody>
+    </table>
+</main>

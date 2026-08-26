@@ -1,3 +1,5 @@
+const { registrarLog } = require('../../config/logger');
+
 module.exports = function (app) {
   app.get("/cadastro", function (request, response) {
     response.render("cadastro", { mensagem: null });
@@ -8,7 +10,7 @@ module.exports = function (app) {
   });
 
   app.post("/cadastro", async function (request, response) {
-  const { cnpj_empresa, nome, email, senha } = request.body;
+    const { cnpj_empresa, nome, email, senha } = request.body;
 
     try {
       // 1. Busca o ID da empresa através do CNPJ informado
@@ -27,10 +29,21 @@ module.exports = function (app) {
       const defaultRoleId = 4; // Solicitante / Usuário comum
 
       // 2. Cadastra na tabela de pendentes usando o tenant_id encontrado
-      await request.db.query(
+      const [resultPending] = await request.db.query(
         `INSERT INTO pending_users (tenant_id, name, email, password_hash, role_id, status) 
         VALUES (?, ?, ?, ?, ?, 'pendente')`,
         [tenantId, nome, email, senha, defaultRoleId]
+      );
+
+      // 3. Registo no Log de Auditoria (user_id vai null pois o utilizador ainda não existe)
+      await registrarLog(
+        request.db, 
+        tenantId, 
+        null, 
+        'Solicitação', 
+        'Cadastro', 
+        resultPending.insertId, 
+        `Nova solicitação de acesso para o e-mail: ${email}`
       );
 
       response.render("cadastro", { 
@@ -48,32 +61,43 @@ module.exports = function (app) {
   app.post("/cadastro-empresa", async function (request, response) {
     const { nome, cnpj, email, senha } = request.body;
 
-      try {
-        // 1. Cria a empresa na tabela tenants
-        const [resultTenant] = await request.db.query(
-          "INSERT INTO tenants (name, cnpj, email) VALUES (?, ?, ?)",
-          [nome, cnpj, email]
-        );
+    try {
+      // 1. Cria a empresa na tabela tenants
+      const [resultTenant] = await request.db.query(
+        "INSERT INTO tenants (name, cnpj, email) VALUES (?, ?, ?)",
+        [nome, cnpj, email]
+      );
 
-        const newTenantId = resultTenant.insertId;
+      const newTenantId = resultTenant.insertId;
 
-        // 2. (Opcional) Cria automaticamente o primeiro Usuário Administrador dessa empresa
-        const adminRoleId = 1; // ID 1 = Admin
-        await request.db.query(
-          `INSERT INTO users (tenant_id, name, email, password_hash, role_id, is_active) 
-          VALUES (?, ?, ?, ?, ?, TRUE)`,
-          [newTenantId, nome, email, senha, adminRoleId]
-        );
+      // 2. Cria automaticamente o primeiro Usuário Administrador dessa empresa
+      const adminRoleId = 1; // ID 1 = Admin
+      const [resultUser] = await request.db.query(
+        `INSERT INTO users (tenant_id, name, email, password_hash, role_id, is_active) 
+        VALUES (?, ?, ?, ?, ?, TRUE)`,
+        [newTenantId, nome, email, senha, adminRoleId]
+      );
 
-        response.render("cadastro-empresa", { 
-          mensagem: "Empresa e Administrador cadastrados com sucesso! Agora você já pode fazer login." 
-        });
+      // 3. Registo no Log de Auditoria
+      await registrarLog(
+        request.db, 
+        newTenantId, 
+        resultUser.insertId, 
+        'Criação', 
+        'Empresa', 
+        newTenantId, 
+        `Empresa "${nome}" criada juntamente com o utilizador Administrador.`
+      );
 
-      } catch (error) {
-        console.error(error);
-        response.render("cadastro-empresa", { 
-          mensagem: "Erro ao cadastrar empresa. Verifique se o CNPJ já não está cadastrado." 
-        });
-      }
+      response.render("cadastro-empresa", { 
+        mensagem: "Empresa e Administrador cadastrados com sucesso! Agora você já pode fazer login." 
+      });
+
+    } catch (error) {
+      console.error(error);
+      response.render("cadastro-empresa", { 
+        mensagem: "Erro ao cadastrar empresa. Verifique se o CNPJ já não está cadastrado." 
+      });
+    }
   });
 };

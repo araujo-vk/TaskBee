@@ -9,12 +9,36 @@
     <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr style="background-color: #eee;">
-                <th>ID</th>
-                <th>Título</th>
-                <th>Solicitante</th>
-                <th>Tipo</th>
-                <th>Estado</th>
-                <th>Data</th>
+                <th>
+                    <a href="/chamados?sort=id&order=<%= sortAtual === 'id' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                        ID <%= sortAtual === 'id' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
+                    </a>
+                </th>
+                <th>
+                    <a href="/chamados?sort=nome&order=<%= sortAtual === 'nome' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                        Título <%= sortAtual === 'nome' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
+                    </a>
+                </th>
+                <th>
+                    <a href="/chamados?sort=solicitante&order=<%= sortAtual === 'solicitante' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                        Solicitante <%= sortAtual === 'solicitante' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
+                    </a>
+                </th>
+                <th>
+                    <a href="/chamados?sort=tipo&order=<%= sortAtual === 'tipo' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                        Tipo <%= sortAtual === 'tipo' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
+                    </a>
+                </th>
+                <th>
+                    <a href="/chamados?sort=status&order=<%= sortAtual === 'status' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                        Estado <%= sortAtual === 'status' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
+                    </a>
+                </th>
+                <th>
+                    <a href="/chamados?sort=data&order=<%= sortAtual === 'data' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                        Data <%= sortAtual === 'data' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
+                    </a>
+                </th>
                 <th>Ações</th>
             </tr>
         </thead>
@@ -27,11 +51,11 @@
                 <% chamados.forEach(c => { %>
                     <tr>
                         <td>#<%= c.id %></td>
-                        <td><%= c.title %></td>
+                        <td><%= c.titulo %></td>
                         <td><%= c.solicitante %></td>
-                        <td><%= c.type %></td>
+                        <td><%= c.tipo %></td>
                         <td><strong><%= c.status %></strong></td>
-                        <td><%= new Date(c.created_at).toLocaleDateString('pt-PT') %></td>
+                        <td><%= new Date(c.dataCriacao).toLocaleDateString('pt-PT') %></td>
                         <td><a href="/chamados/<%= c.id %>">Ver Detalhes</a></td>
                     </tr>
                 <% }) %>

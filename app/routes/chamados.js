@@ -1,9 +1,5 @@
-/* Lista de páginas incluídas aqui: 
-
-Lista de Chamados: /chamados (Técnico/Gestor/Solicitante)
-Detalhes do Chamado: /chamados/:id (Técnico/Gestor/Solicitante)
-Abertura de Chamado: /chamados/novo (Solicitante)
-*/
+const { registrarLog } = require('../../config/logger');
+const { enviarNotificacao } = require('../../config/notificador');
 
 module.exports = function (app) {
 
@@ -22,11 +18,21 @@ module.exports = function (app) {
     }
 
     try {
-      // Correção: usa requester_id e status_id (ID 1 = Aberto)
-      await req.db.query(
+      const [resultado] = await req.db.query(
         `INSERT INTO tickets (tenant_id, requester_id, title, description, type, status_id) 
          VALUES (?, ?, ?, ?, ?, 1)`,
         [usuario.tenantId, usuario.id, titulo, descricao, tipo]
+      );
+
+      // REGISTO DE LOG DE AUDITORIA
+      await registrarLog(
+        req.db,
+        usuario.tenantId,
+        usuario.id,
+        'Criar',
+        'Chamado',
+        resultado.insertId,
+        `Novo chamado aberto: "${titulo}"`
       );
 
       res.redirect('/chamados');
@@ -36,13 +42,28 @@ module.exports = function (app) {
     }
   });
 
-  // 3. Listar chamados do Tenant
+  // 3. Listar chamados do Tenant com Ordenação
   app.get('/chamados', async (req, res) => {
     const usuario = req.session.usuarioLogado;
 
     if (!usuario) {
       return res.redirect('/login');
     }
+
+    const colunasPermitidas = {
+      id: 't.id',
+      nome: 't.title',
+      solicitante: 'u.name',
+      tipo: 't.type',
+      status: 's.name',
+      prioridade: 'p.name',
+      categoria: 'c.name',
+      data: 't.created_at'
+    };
+
+    const sort = req.query.sort || 'data';
+    const order = req.query.order === 'asc' ? 'ASC' : 'DESC';
+    const colunaOrdenacao = colunasPermitidas[sort] || 't.created_at';
 
     try {
       let query = `
@@ -66,17 +87,16 @@ module.exports = function (app) {
 
       const params = [usuario.tenantId];
 
-      // Se for utilizador comum/solicitante (ex: Nível/Role 4), mostra apenas os seus próprios chamados
       if (usuario.roleId === 4 || usuario.role === 4) {
         query += ` AND t.requester_id = ?`;
         params.push(usuario.id);
       }
 
-      query += ` ORDER BY t.created_at DESC`;
+      query += ` ORDER BY ${colunaOrdenacao} ${order}`;
 
       const [chamados] = await req.db.query(query, params);
 
-      res.render('chamados', { chamados });
+      res.render('chamados', { chamados, sortAtual: sort, ordemAtual: order });
     } catch (error) {
       console.error('Erro ao listar chamados:', error);
       res.status(500).send('Erro interno do servidor ao carregar chamados.');
@@ -132,15 +152,90 @@ module.exports = function (app) {
     }
 
     try {
+      // Busca dados do ticket para identificar o solicitante e título
+      const [ticketInfo] = await req.db.query(
+        `SELECT requester_id, title FROM tickets WHERE id = ? AND tenant_id = ?`,
+        [chamadoId, usuario.tenantId]
+      );
+
       await req.db.query(
         `UPDATE tickets SET status_id = ? WHERE id = ? AND tenant_id = ?`,
         [status_id, chamadoId, usuario.tenantId]
       );
 
+      // REGISTO DE LOG DE AUDITORIA
+      await registrarLog(
+        req.db,
+        usuario.tenantId,
+        usuario.id,
+        'Atualizar',
+        'Chamado',
+        chamadoId,
+        `Status alterado para ID: ${status_id}`
+      );
+
+      // DISPARO DE NOTIFICAÇÃO AO SOLICITANTE
+      if (ticketInfo.length > 0 && ticketInfo[0].requester_id !== usuario.id) {
+        const requesterId = ticketInfo[0].requester_id;
+        const tituloTicket = ticketInfo[0].title;
+
+        // ID 3 = Resolvido na tabela statuses
+        if (parseInt(status_id) === 3) {
+          await enviarNotificacao(
+            req.db,
+            usuario.tenantId,
+            requesterId,
+            'Chamado Resolvido',
+            `O seu chamado #${chamadoId} ("${tituloTicket}") foi marcado como resolvido.`
+          );
+        } else {
+          await enviarNotificacao(
+            req.db,
+            usuario.tenantId,
+            requesterId,
+            'Atualização de Chamado',
+            `O estado do seu chamado #${chamadoId} ("${tituloTicket}") foi alterado.`
+          );
+        }
+      }
+
       res.redirect(`/chamados/${chamadoId}`);
     } catch (error) {
       console.error('Erro ao atualizar estado:', error);
       res.status(500).send('Erro interno do servidor');
+    }
+  });
+
+  // 6. Excluir um chamado (Apenas Gestores/Admins)
+  app.post('/chamados/:id/excluir', async (req, res) => {
+    const usuario = req.session.usuarioLogado;
+    const chamadoId = req.params.id;
+
+    if (!usuario || (usuario.roleId !== 1 && usuario.roleId !== 2)) {
+      return res.status(403).send('Acesso negado.');
+    }
+
+    try {
+      await req.db.query(
+        `DELETE FROM tickets WHERE id = ? AND tenant_id = ?`,
+        [chamadoId, usuario.tenantId]
+      );
+
+      // REGISTO DE LOG DE AUDITORIA
+      await registrarLog(
+        req.db,
+        usuario.tenantId,
+        usuario.id,
+        'Excluir',
+        'Chamado',
+        chamadoId,
+        `Chamado #${chamadoId} excluído permanentemente.`
+      );
+
+      res.redirect('/chamados');
+    } catch (error) {
+      console.error('Erro ao excluir chamado:', error);
+      res.status(500).send('Erro ao tentar excluir chamado.');
     }
   });
 

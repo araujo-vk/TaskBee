@@ -1,1 +1,23 @@
-<p>logs</p>
+<h2>Logs de Auditoria do Sistema</h2>
+<table border="1" cellpadding="8" style="width: 100%; border-collapse: collapse;">
+    <tr style="background-color: #eee;">
+        <th>Data</th>
+        <th>Responsável</th>
+        <th>Ação</th>
+        <th>Entidade (Módulo)</th>
+        <th>Detalhes</th>
+    </tr>
+    <% if (logs && logs.length > 0) { %>
+        <% logs.forEach(log => { %>
+            <tr>
+                <td><%= new Date(log.created_at).toLocaleString('pt-PT') %></td>
+                <td><%= log.responsavel || 'Sistema' %></td>
+                <td><%= log.action %></td>
+                <td><%= log.entity %></td>
+                <td><%= log.details %></td>
+            </tr>
+        <% }) %>
+    <% } else { %>
+        <tr><td colspan="5">Nenhum log registrado.</td></tr>
+    <% } %>
+</table>

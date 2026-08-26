@@ -1,1 +1,36 @@
-<p>novo chamado</p>
+<p>portal solicitante</p>
+
+<h2>Meus chamados</h2>
+
+<table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+    <thead>
+        <tr style="background-color: #eee;">
+            <th>ID</th>
+            <th>Título</th>
+            <th>Tipo</th>
+            <th>Estado</th>
+            <th>Data</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (typeof chamados !== 'undefined' && chamados.length > 0) { %>
+            <% chamados.forEach(c => { %>
+                <tr>
+                    <td>#<%= c.id %></td>
+                    <td><%= c.titulo %></td>
+                    <td><%= c.tipo %></td>
+                    <td><strong><%= c.status %></strong></td>
+                    <td><%= new Date(c.dataCriacao).toLocaleDateString('pt-PT') %></td>
+                    <td><a href="/chamados/<%= c.id %>">Ver Detalhes</a></td>
+                </tr>
+            <% }) %>
+        <% } else { %>
+            <tr>
+                <td colspan="6" style="text-align: center;">Você ainda não possui nenhum chamado aberto.</td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+
+<a href="/chamados/novo" style="display: inline-block; margin-top: 15px;">+ Criar Novo Chamado</a>

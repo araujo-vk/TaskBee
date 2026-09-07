@@ -487,4 +487,4 @@ INSERT INTO ticket_comments (tenant_id, ticket_id, user_id, comment, is_internal
 (1, 2, 3, 'O monitor foi solicitado ao fornecedor.', FALSE),
 (1, 2, 2, 'Aprovação de orçamento pendente.', TRUE);
 
-
+select*from users;

@@ -16,7 +16,7 @@
     <h3>Descrição</h3>
     <p style="background: #f9f9f9; padding: 15px; border-radius: 5px;"><%= chamado.description %></p>
 
-    <% if (usuario && usuario.role !== 4) { %>
+    <% if (usuario && usuario.role !== 4 || chamado.requester_id === usuario.id) { %>
         <hr>
         <h3>Alterar Estado</h3>
         <form action="/chamados/<%= chamado.id %>/status" method="POST">

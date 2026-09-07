@@ -158,8 +158,8 @@ module.exports = function (app) {
       // Busca dados do usuário (filtra por tenant_id por segurança)
       const [usuarioResult] = await req.db.query(
         `SELECT id, name AS nome, email, role_id, department_id, is_active 
-         FROM users 
-         WHERE id = ? AND tenant_id = ?`,
+          FROM users 
+          WHERE id = ? AND tenant_id = ?`,
         [usuarioId, tenantId]
       );
 
@@ -189,31 +189,54 @@ module.exports = function (app) {
 
   // 4. ROTA (POST): Salvar Alterações do Usuário
   app.post('/gestao-usuarios/editar/:id', async (req, res) => {
-    const tenantId = req.session.usuarioLogado ? req.session.usuarioLogado.tenantId : null;
-    if (!tenantId) {
-      return res.redirect('/login');
-    }
+    const usuarioLogado = req.session.usuarioLogado;
+    const tenantId = usuarioLogado ? usuarioLogado.tenantId : null;
+    
+    if (!tenantId) return res.redirect('/login');
 
     const usuarioId = req.params.id;
     const { nome, email, department_id, role_id, is_active } = req.body;
 
     try {
-      //Trata se o departamento selecionado foi nulo/vazio
+      // 1. Busca os dados atuais do usuário que vai ser editado
+      const [alvo] = await req.db.query('SELECT role_id FROM users WHERE id = ? AND tenant_id = ?', [usuarioId, tenantId]);
+      
+      if (alvo.length === 0) return res.status(404).send('Usuário não encontrado.');
+
+      // 2. Regra de Negócio: O roleId do usuário logado (ex: 3) não pode ser MAIOR (menor ranque) 
+      // que o role_id de quem ele tenta editar (ex: 1), nem pode conceder um ranque maior que o seu próprio.
+      if (usuarioLogado.roleId > alvo[0].role_id || usuarioLogado.roleId > role_id) {
+          return res.status(403).send('Acesso negado: Não tem permissão para alterar este utilizador ou conceder este nível de acesso.');
+      }
+
       const depId = department_id && department_id !== '' ? department_id : null;
 
       await req.db.query(
         `UPDATE users 
-         SET name = ?, email = ?, role_id = ?, department_id = ?, is_active = ?
-         WHERE id = ? AND tenant_id = ?`,
+          SET name = ?, email = ?, role_id = ?, department_id = ?, is_active = ?
+          WHERE id = ? AND tenant_id = ?`,
         [nome, email, role_id, depId, is_active, usuarioId, tenantId]
       );
 
       res.redirect('/gestao-usuarios');
-    } catch (erro) {
+
+      } catch (erro) {
       console.error("Erro ao atualizar usuário:", erro);
+      
+      // Verifica se o erro é de entrada duplicada no banco de dados
+      if (erro.code === 'ER_DUP_ENTRY') {
+        return res.status(400).send(`
+          <div style="max-width: 500px; margin: 50px auto; padding: 20px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 8px; font-family: sans-serif; text-align: center;">
+              <h2 style="margin-top: 0;">Ação Negada</h2>
+              <p>O e-mail <strong>${email}</strong> já está associado a outro utilizador ativo no sistema.</p>
+              <br>
+              <a href="/gestao-usuarios/editar/${usuarioId}" style="display: inline-block; padding: 10px 20px; background-color: #721c24; color: white; text-decoration: none; border-radius: 4px;">← Voltar para a Edição</a>
+          </div>
+        `);
+      }
+
       res.status(500).send("Erro ao salvar alterações do usuário.");
-    }
-  });
+  };
 
   // 5. ROTA (GET): Deletar Usuário
   app.get('/gestao-usuarios/deletar/:id', async (req, res) => {
@@ -237,4 +260,4 @@ module.exports = function (app) {
     }
   });
 
-};
+})};

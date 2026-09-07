@@ -50,6 +50,9 @@ module.exports = function (app) {
       return res.redirect('/login');
     }
 
+    // Identifica e padroniza o nível de acesso
+    const userRole = Number(usuario.roleId || usuario.role || usuario.role_id);
+
     const colunasPermitidas = {
       id: 't.id',
       nome: 't.title',
@@ -87,7 +90,9 @@ module.exports = function (app) {
 
       const params = [usuario.tenantId];
 
-      if (usuario.roleId === 4 || usuario.role === 4) {
+      // Se for Solicitante (nível 4), filtra apenas os chamados criados por ele
+      // Se for Técnico (3), Gestor (2) ou Admin (1), a query traz todos da empresa
+      if (userRole === 4) {
         query += ` AND t.requester_id = ?`;
         params.push(usuario.id);
       }
@@ -112,9 +117,10 @@ module.exports = function (app) {
       return res.redirect('/login');
     }
 
+    const userRole = Number(usuario.roleId || usuario.role || usuario.role_id);
+
     try {
-      const [resultados] = await req.db.query(
-        `SELECT 
+      let query = `SELECT 
            t.*, 
            s.name AS status,
            p.name AS prioridade,
@@ -126,12 +132,20 @@ module.exports = function (app) {
          LEFT JOIN priorities p ON p.id = t.priority_id
          LEFT JOIN ticket_categories c ON c.id = t.category_id
          LEFT JOIN users u ON u.id = t.requester_id
-         WHERE t.id = ? AND t.tenant_id = ?`,
-        [chamadoId, usuario.tenantId]
-      );
+         WHERE t.id = ? AND t.tenant_id = ?`;
+
+      const params = [chamadoId, usuario.tenantId];
+
+      // Se for Solicitante (nível 4), só permite visualizar se ele for o criador do chamado
+      if (userRole === 4) {
+        query += ` AND t.requester_id = ?`;
+        params.push(usuario.id);
+      }
+
+      const [resultados] = await req.db.query(query, params);
 
       if (resultados.length === 0) {
-        return res.status(404).send('Chamado não encontrado.');
+        return res.status(404).send('Chamado não encontrado ou acesso não permitido.');
       }
 
       res.render('detalhes-chamado', { chamado: resultados[0] });

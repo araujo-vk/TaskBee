@@ -1,0 +1,131 @@
+/* public/css/chamados.css */
+
+/* Container principal da página */
+.conteudo-chamados {
+    width: 95%;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: var(--cor-branco);
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(10, 10, 10, 0.05);
+    border: 1px solid #eaeaea;
+}
+
+/* Cabeçalho da área (Título e Botão) */
+.cabecalho-chamados {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    gap: 15px;
+}
+
+.cabecalho-chamados h2 {
+    margin: 0;
+    color: var(--cor-preto);
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* Botão de Novo Chamado */
+.btn-novo-chamado {
+    display: inline-block;
+    background-color: var(--cor-amarelo);
+    color: var(--cor-preto);
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    border: 2px solid var(--cor-amarelo);
+    transition: all 0.2s ease;
+}
+
+.btn-novo-chamado:hover {
+    background-color: var(--cor-laranja);
+    color: var(--cor-branco);
+    border-color: var(--cor-laranja);
+}
+
+/* Container para permitir rolagem horizontal em telas pequenas */
+.tabela-responsiva {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+    border: 1px solid #eaeaea;
+}
+
+/* Estilização da Tabela */
+.tabela-chamados {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 14px;
+}
+
+.tabela-chamados th {
+    background-color: #f1f5f9;
+    color: var(--cor-preto);
+    font-weight: 600;
+    padding: 15px;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+/* Links de ordenação no cabeçalho */
+.tabela-chamados th a {
+    color: inherit;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.2s;
+}
+
+.tabela-chamados th a:hover {
+    color: var(--cor-laranja);
+}
+
+.tabela-chamados td {
+    padding: 15px;
+    border-bottom: 1px solid #eaeaea;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.tabela-chamados tbody tr:hover {
+    background-color: #fafafa;
+}
+
+/* Link de ação (Ver Detalhes) */
+.link-detalhes {
+    color: var(--cor-laranja);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.link-detalhes:hover {
+    color: var(--cor-preto);
+    text-decoration: underline;
+}
+
+/* Ajustes para Dispositivos Móveis */
+@media (max-width: 600px) {
+    .conteudo-chamados {
+        padding: 20px 15px;
+        margin: 20px auto;
+    }
+    
+    .cabecalho-chamados {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-novo-chamado {
+        width: 100%;
+        text-align: center;
+    }
+}

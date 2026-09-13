@@ -1,23 +1,54 @@
-<h2>Logs de Auditoria do Sistema</h2>
-<table border="1" cellpadding="8" style="width: 100%; border-collapse: collapse;">
-    <tr style="background-color: #eee;">
-        <th>Data</th>
-        <th>Responsável</th>
-        <th>Ação</th>
-        <th>Entidade (Módulo)</th>
-        <th>Detalhes</th>
-    </tr>
-    <% if (logs && logs.length > 0) { %>
-        <% logs.forEach(log => { %>
-            <tr>
-                <td><%= new Date(log.created_at).toLocaleString('pt-PT') %></td>
-                <td><%= log.responsavel || 'Sistema' %></td>
-                <td><%= log.action %></td>
-                <td><%= log.entity %></td>
-                <td><%= log.details %></td>
-            </tr>
-        <% }) %>
-    <% } else { %>
-        <tr><td colspan="5">Nenhum log registrado.</td></tr>
-    <% } %>
-</table>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs de Auditoria - TaskBee</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <!-- Reutilizamos o CSS da tabela de chamados! -->
+    <link rel="stylesheet" href="/css/chamados.css">
+    <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
+</head>
+<body>
+    <%- include('partials/header') %>
+
+    <main class="conteudo-chamados">
+        <div class="cabecalho-chamados">
+            <h2>Logs de Auditoria do Sistema</h2>
+        </div>
+
+        <div class="tabela-responsiva">
+            <table class="tabela-chamados">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Responsável</th>
+                        <th>Ação</th>
+                        <th>Entidade (Módulo)</th>
+                        <th>Detalhes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (logs && logs.length > 0) { %>
+                        <% logs.forEach(log => { %>
+                            <tr>
+                                <td><%= new Date(log.created_at).toLocaleString('pt-PT') %></td>
+                                <td><strong><%= log.responsavel || 'Sistema' %></strong></td>
+                                <td><span style="color: var(--cor-laranja); font-weight: bold;"><%= log.action %></span></td>
+                                <td><%= log.entity %></td>
+                                <td><%= log.details %></td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 30px;">Nenhum log registrado.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

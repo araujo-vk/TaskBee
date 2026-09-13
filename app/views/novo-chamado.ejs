@@ -1,19 +1,38 @@
-<p>novo chamado</p>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novo Chamado - TaskBee</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/painel-forms.css">
+    <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
+</head>
+<body>
+    <%- include('partials/header') %>
+    
+    <main class="container-form">
+        <h2>Abrir Novo Chamado</h2>
+        <form action="/chamados/novo" method="POST">
+            <label for="titulo">Título do Chamado:</label>
+            <input type="text" id="titulo" name="titulo" required>
 
-<form action="/chamados/novo" method="POST">
-    <label for="titulo">Título do Chamado:</label>
-    <input type="text" id="titulo" name="titulo" required>
+            <label for="descricao">Descrição:</label>
+            <textarea id="descricao" name="descricao" rows="5" required></textarea>
 
-    <label for="descricao">Descrição:</label>
-    <textarea id="descricao" name="descricao" required></textarea>
+            <label for="tipo">Tipo de Chamado:</label>
+            <select id="tipo" name="tipo" required>
+                <option value="incidente">Incidente</option>
+                <option value="requisicao">Requisição</option>
+                <option value="problema">Problema</option>
+                <option value="mudanca">Mudança</option>
+                <option value="outro">Outro</option>
+            </select>
+            
+            <button type="submit" class="btn-principal">Enviar Chamado</button>
+        </form>
+    </main>
 
-    <label for="tipo">Tipo de Chamado:</label>
-    <select id="tipo" name="tipo" required>
-        <option value="incidente">Incidente</option>
-        <option value="requisicao">Requisição</option>
-        <option value="problema">Problema</option>
-        <option value="mudanca">Mudança</option>
-        <option value="outro">Outro</option>
-    </select>
-    <button type="submit">Enviar</button>
-</form>     
+    <%- include('partials/footer') %>
+</body>
+</html>

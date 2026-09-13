@@ -1,0 +1,78 @@
+/* public/css/detalhes.css */
+.container-detalhes {
+    width: 95%;
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: var(--cor-branco);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.cabecalho-detalhes {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.badge-status {
+    background-color: var(--cor-amarelo);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.info-grid p {
+    margin: 8px 0;
+}
+
+.descricao-box {
+    background: #f8fafc;
+    border-left: 4px solid var(--cor-laranja);
+    padding: 15px;
+    margin: 25px 0;
+    border-radius: 0 6px 6px 0;
+}
+
+.alterar-status {
+    background: #fff3e0;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+.alterar-status form {
+    display: flex;
+    gap: 10px;
+}
+
+.alterar-status select {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.alterar-status button {
+    background: var(--cor-laranja);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.link-voltar {
+    color: var(--cor-preto);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+@media (max-width: 600px) {
+    .alterar-status form { flex-direction: column; }
+}

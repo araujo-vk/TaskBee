@@ -1,35 +1,52 @@
-<p>detalhes do chamado</p>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Chamado - TaskBee</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/detalhes-chamado.css">
+    <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
+</head>
+<body>
+    <%- include('partials/header') %>
 
-<%- include('partials/header') %>
+    <main class="container-detalhes">
+        <div class="cabecalho-detalhes">
+            <h2>Chamado #<%= chamado.id %></h2>
+            <span class="badge-status"><%= chamado.status %></span>
+        </div>
 
-<main style="padding: 20px;">
-    <h2>Detalhes do Chamado #<%= chamado.id %></h2>
+        <div class="info-grid">
+            <p><strong>Título:</strong> <%= chamado.title %></p>
+            <p><strong>Solicitante:</strong> <%= chamado.solicitante %> (<%= chamado.email_solicitante %>)</p>
+            <p><strong>Tipo:</strong> <%= chamado.type %></p>
+            <p><strong>Abertura:</strong> <%= new Date(chamado.created_at).toLocaleString('pt-PT') %></p>
+        </div>
 
-    <p><strong>Título:</strong> <%= chamado.title %></p>
-    <p><strong>Solicitante:</strong> <%= chamado.solicitante %> (<%= chamado.email_solicitante %>)</p>
-    <p><strong>Tipo:</strong> <%= chamado.type %></p>
-    <p><strong>Estado Atual:</strong> <%= chamado.status %></p>
-    <p><strong>Data de Abertura:</strong> <%= new Date(chamado.created_at).toLocaleString('pt-PT') %></p>
+        <div class="descricao-box">
+            <h3>Descrição</h3>
+            <p><%= chamado.description %></p>
+        </div>
 
-    <hr>
+        <% if (usuario && usuario.role !== 4 || chamado.requester_id === usuario.id) { %>
+            <div class="alterar-status">
+                <h3>Atualizar Estado</h3>
+                <form action="/chamados/<%= chamado.id %>/status" method="POST">
+                    <select name="status_id" id="status_id" required>
+                        <option value="1" <%= chamado.status_id == 1 ? 'selected' : '' %>>Aberto</option>
+                        <option value="2" <%= chamado.status_id == 2 ? 'selected' : '' %>>Em Andamento</option>
+                        <option value="3" <%= chamado.status_id == 3 ? 'selected' : '' %>>Resolvido</option>
+                        <option value="4" <%= chamado.status_id == 4 ? 'selected' : '' %>>Fechado</option>
+                    </select>
+                    <button type="submit">Atualizar</button>
+                </form>
+            </div>
+        <% } %>
 
-    <h3>Descrição</h3>
-    <p style="background: #f9f9f9; padding: 15px; border-radius: 5px;"><%= chamado.description %></p>
+        <a href="/chamados" class="link-voltar">← Voltar para a lista</a>
+    </main>
 
-    <% if (usuario && usuario.role !== 4 || chamado.requester_id === usuario.id) { %>
-        <hr>
-        <h3>Alterar Estado</h3>
-        <form action="/chamados/<%= chamado.id %>/status" method="POST">
-            <select name="status_id" id="status_id" required>
-                <option value="1" <%= chamado.status_id == 1 ? 'selected' : '' %>>Aberto</option>
-                <option value="2" <%= chamado.status_id == 2 ? 'selected' : '' %>>Em Andamento</option>
-                <option value="3" <%= chamado.status_id == 3 ? 'selected' : '' %>>Resolvido</option>
-                <option value="4" <%= chamado.status_id == 4 ? 'selected' : '' %>>Fechado</option>
-            </select>
-            <button type="submit">Atualizar</button>
-        </form>
-    <% } %>
-
-    <br><br>
-    <a href="/chamados">← Voltar para a lista de chamados</a>
-</main>
+    <%- include('partials/footer') %>
+</body>
+</html>

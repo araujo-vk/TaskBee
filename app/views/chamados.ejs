@@ -1,65 +1,82 @@
-<p>chamados</p>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Chamados - TaskBee</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/chamados.css">
+    <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
+</head>
+<body>
+    <%- include('partials/header') %>
 
-<%- include('partials/header') %>
+    <main class="conteudo-chamados">
+        <div class="cabecalho-chamados">
+            <h2>Lista de Chamados</h2>
+            <a href="/chamados/novo" class="btn-novo-chamado">+ Criar Novo Chamado</a>
+        </div>
 
-<main style="padding: 20px;">
-    <h2>Lista de Chamados</h2>
-    <a href="/chamados/novo" style="display: inline-block; margin-bottom: 15px;">+ Criar Novo Chamado</a>
-
-    <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse;">
-        <thead>
-            <tr style="background-color: #eee;">
-                <th>
-                    <a href="/chamados?sort=id&order=<%= sortAtual === 'id' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
-                        ID <%= sortAtual === 'id' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
-                    </a>
-                </th>
-                <th>
-                    <a href="/chamados?sort=nome&order=<%= sortAtual === 'nome' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
-                        Título <%= sortAtual === 'nome' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
-                    </a>
-                </th>
-                <th>
-                    <a href="/chamados?sort=solicitante&order=<%= sortAtual === 'solicitante' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
-                        Solicitante <%= sortAtual === 'solicitante' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
-                    </a>
-                </th>
-                <th>
-                    <a href="/chamados?sort=tipo&order=<%= sortAtual === 'tipo' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
-                        Tipo <%= sortAtual === 'tipo' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
-                    </a>
-                </th>
-                <th>
-                    <a href="/chamados?sort=status&order=<%= sortAtual === 'status' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
-                        Estado <%= sortAtual === 'status' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
-                    </a>
-                </th>
-                <th>
-                    <a href="/chamados?sort=data&order=<%= sortAtual === 'data' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
-                        Data <%= sortAtual === 'data' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
-                    </a>
-                </th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% if (chamados.length === 0) { %>
-                <tr>
-                    <td colspan="7" style="text-align: center;">Nenhum chamado encontrado.</td>
-                </tr>
-            <% } else { %>
-                <% chamados.forEach(c => { %>
+        <div class="tabela-responsiva">
+            <table class="tabela-chamados">
+                <thead>
                     <tr>
-                        <td>#<%= c.id %></td>
-                        <td><%= c.titulo %></td>
-                        <td><%= c.solicitante %></td>
-                        <td><%= c.tipo %></td>
-                        <td><strong><%= c.status %></strong></td>
-                        <td><%= new Date(c.dataCriacao).toLocaleDateString('pt-PT') %></td>
-                        <td><a href="/chamados/<%= c.id %>">Ver Detalhes</a></td>
+                        <th>
+                            <a href="/chamados?sort=id&order=<%= sortAtual === 'id' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                                ID <%= sortAtual === 'id' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="/chamados?sort=nome&order=<%= sortAtual === 'nome' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                                Título <%= sortAtual === 'nome' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="/chamados?sort=solicitante&order=<%= sortAtual === 'solicitante' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                                Solicitante <%= sortAtual === 'solicitante' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="/chamados?sort=tipo&order=<%= sortAtual === 'tipo' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                                Tipo <%= sortAtual === 'tipo' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="/chamados?sort=status&order=<%= sortAtual === 'status' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                                Estado <%= sortAtual === 'status' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="/chamados?sort=data&order=<%= sortAtual === 'data' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                                Data <%= sortAtual === 'data' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
+                            </a>
+                        </th>
+                        <th>Ações</th>
                     </tr>
-                <% }) %>
-            <% } %>
-        </tbody>
-    </table>
-</main>
+                </thead>
+                <tbody>
+                    <% if (chamados.length === 0) { %>
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 30px;">Nenhum chamado encontrado.</td>
+                        </tr>
+                    <% } else { %>
+                        <% chamados.forEach(c => { %>
+                            <tr>
+                                <td>#<%= c.id %></td>
+                                <td><strong><%= c.titulo %></strong></td>
+                                <td><%= c.solicitante %></td>
+                                <td><%= c.tipo %></td>
+                                <td><%= c.status %></td>
+                                <td><%= new Date(c.dataCriacao).toLocaleDateString('pt-BR') %></td>
+                                <td><a href="/chamados/<%= c.id %>" class="link-detalhes">Ver Detalhes</a></td>
+                            </tr>
+                        <% }) %>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

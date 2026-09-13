@@ -1,21 +1,40 @@
-<header style="background-color: #f4f4f4; padding: 10px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center;">
-    <div>
-        <p>header</p>
+<!-- views/partials/header.ejs -->
+<link rel="stylesheet" href="/css/header.css">
+
+<header class="site-header">
+    <div class="logo">
+        <a href="/"><img src="/TaskBee-logo.png" alt="TaskBee"></a>
     </div>
-
-    <% if (typeof usuario !== 'undefined' && usuario) { %>
-        <div style="text-align: right;">
-            <span>Conta ativa: <strong><%= usuario.nome %></strong></span>
+    
+    <!-- Botão Hambúrguer (exibido apenas no mobile) -->
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir Menu">
+        ☰
+    </button>
+    
+    <nav class="nav-links" id="navLinks">
+        <% if (usuario) { %>
+            <span class="saudacao">Olá, <%= usuario.nome || usuario.name %>!</span>
+            <a href="/chamados">Meus Chamados</a>
+            <a href="/chamados/novo">Novo Chamado</a>
             
-            <small style="color: #666; display: block;">
-                Perfil: 
-                <% if (usuario.role === 1) { %> Administrator <% } %>
-                <% if (usuario.role === 2) { %> Gestor <% } %>
-                <% if (usuario.role === 3) { %> Técnico <% } %>
-                <% if (usuario.role === 4) { %> Usuário <% } %>
-            </small>
-
-            <a href="/logout" style="color: red; text-decoration: none; font-size: 12px;">[Sair / Logout]</a>
-        </div>
-    <% } %>
+            <% if (usuario.roleId === 1 || usuario.roleId === 2) { %>
+                <a href="/gestao-usuarios">Gestão de Usuários</a>
+            <% } %>
+            
+            <a href="/logout" class="btn-logout">Sair</a>
+        <% } else { %>
+            <a href="/login">Entrar</a>
+            <a href="/cadastro">Cadastrar</a>
+            <a href="/cadastro-empresa" class="btn-destaque">Cadastrar Empresa</a>
+        <% } %>
+    </nav>
 </header>
+
+<script>
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const navLinks = document.getElementById('navLinks');
+
+    hamburgerBtn.addEventListener('click', () => {
+        navLinks.classList.toggle('ativo');
+    });
+</script>

@@ -1,0 +1,96 @@
+/* public/css/header.css */
+.site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--cor-branco); /*[cite: 23]*/
+    padding: 15px 30px;
+    border-bottom: 2px solid #eaeaea;
+    box-shadow: 0 2px 4px rgba(10, 10, 10, 0.05);
+    position: relative;
+    z-index: 100;
+}
+
+.site-header .logo a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+/* Controla o tamanho da imagem da logo */
+.site-header .logo img {
+    height: 45px;       /* Define uma altura fixa adequada para o header no desktop */
+    width: auto;        /* Garante que a largura se ajuste mantendo a proporção */
+    object-fit: contain;
+    display: block;
+}
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--cor-preto); /*[cite: 23]*/
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.nav-links a:hover {
+    color: var(--cor-laranja); /*[cite: 23]*/
+}
+
+.btn-destaque {
+    background-color: var(--cor-amarelo); /*[cite: 23]*/
+    color: var(--cor-preto) !important; /*[cite: 23]*/
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+}
+
+.btn-destaque:hover {
+    background-color: var(--cor-laranja); /*[cite: 23]*/
+    color: var(--cor-branco) !important; /*[cite: 23]*/
+}
+
+/* Oculta o botão hambúrguer por padrão em computadores */
+.hamburger-btn {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--cor-preto); /*[cite: 23]*/
+}
+
+/* --- REGRAS MOBILE --- */
+@media (max-width: 768px) {
+    .hamburger-btn {
+        display: block; /* Exibe o botão no telemóvel */
+    }
+
+    .nav-links {
+        display: none; /* Esconde os links por padrão no telemóvel */
+        flex-direction: column;
+        width: 100%;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background-color: var(--cor-branco); /*[cite: 23]*/
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(10, 10, 10, 0.1);
+        border-bottom: 2px solid #eaeaea;
+        gap: 15px;
+        align-items: center;
+    }
+
+    /* Exibe o menu suspenso quando a classe 'ativo' for adicionada pelo JavaScript */
+    .nav-links.ativo {
+        display: flex;
+    }
+    .site-header .logo img {
+        height: 35px;   /* Reduz um pouco a altura no telemóvel para economizar espaço vertical */
+    }
+}

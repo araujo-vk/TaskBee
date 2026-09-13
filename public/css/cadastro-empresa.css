@@ -1,0 +1,119 @@
+/* public/css/cadastro-empresa.css */
+
+/* Card centralizado principal (tamanho reduzido + borda superior laranja) */
+.container {
+    width: 85%;
+    max-width: 360px;
+    margin: 30px auto;
+    padding: 25px 22px;
+    background-color: var(--cor-branco);
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(10, 10, 10, 0.08);
+    border: 1px solid #eaeaea;
+    border-top: 5px solid var(--cor-laranja); /* Detalhe em laranja no topo */
+    text-align: center;
+}
+
+/* Título da página */
+.container > p:first-child {
+    font-size: 21px;
+    font-weight: 700;
+    color: var(--cor-preto);
+    margin-top: 0;
+    margin-bottom: 18px;
+}
+
+/* Container do formulário */
+.form-container {
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+/* Labels dos campos */
+.form-container label {
+    display: block;
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--cor-preto);
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+/* Campos de entrada com destaque em laranja no foco */
+.form-container input {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    border: 1.5px solid #dddddd;
+    border-radius: 8px;
+    font-family: var(--fonte-principal);
+    font-size: 13px;
+    text-align: center;
+    background-color: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-container input:focus {
+    outline: none;
+    border-color: var(--cor-laranja);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+}
+
+/* Botão amarelo com borda e efeito hover em laranja */
+.form-container button {
+    width: 100%;
+    padding: 11px;
+    margin-top: 6px;
+    background-color: var(--cor-amarelo);
+    color: var(--cor-preto);
+    font-weight: 700;
+    font-size: 14px;
+    font-family: var(--fonte-principal);
+    border: 2px solid var(--cor-laranja); /* Borda em laranja */
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.form-container button:hover {
+    background-color: var(--cor-laranja);
+    color: var(--cor-branco);
+    border-color: var(--cor-laranja);
+}
+
+.form-container button:active {
+    transform: scale(0.98);
+}
+
+/* Links auxiliares destacando o laranja */
+.container a {
+    display: inline-block;
+    color: var(--cor-laranja);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 8px;
+    transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.container a:hover {
+    color: var(--cor-preto);
+    text-decoration: underline;
+}
+
+/* Ajustes para dispositivos móveis */
+@media (max-width: 480px) {
+    .container {
+        width: 90%;
+        padding: 20px 16px;
+        margin: 20px auto;
+    }
+
+    .container > p:first-child {
+        font-size: 19px;
+    }
+
+    .form-container input {
+        padding: 9px 10px;
+    }
+}

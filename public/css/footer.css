@@ -1,0 +1,39 @@
+/* public/css/footer.css */
+.site-footer {
+    background-color: var(--cor-preto);
+    color: var(--cor-branco);
+    text-align: center;
+    padding: 25px 15px;
+    margin-top: auto;
+}
+
+.footer-content p {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    font-weight: 300;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.footer-links a {
+    color: var(--cor-amarelo);
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+    color: var(--cor-laranja);
+}
+
+/* --- REGRAS MOBILE --- */
+@media (max-width: 600px) {
+    .footer-links {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

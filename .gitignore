@@ -1,3 +1,5 @@
 node_modules/
 siteBase.txt
 Visual.txt
+app/routes/admin.js
+app/views/admin.ejs

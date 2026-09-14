@@ -2,55 +2,16 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Página Inicial - ITSM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home- TaskBee</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/index.css">
+    <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-
-    <div style="background-color: #222; color: #fff; padding: 10px 20px; font-family: monospace;">
-        <% if (typeof usuario !== 'undefined' && usuario) { %>
-            <span style="color: #00ff00;">● SESSÃO ATIVA</span> | 
-            Usuário: <strong><%= usuario.nome %></strong> | 
-            ID: <%= usuario.id %> | 
-            Role ID: <%= usuario.role %> |
-            <a href="/logout" style="color: #ff6666; margin-left: 15px;">[Sair]</a>
-        <% } else { %>
-            <span style="color: #ff4444;">● NENHUMA SESSÃO ATIVA (Visitante)</span> | 
-            <a href="/login" style="color: #44ffff; margin-left: 15px;">[Fazer Login]</a>
-        <% } %>
-    </div>
-
-    <main style="padding: 20px;">
-        <h1>Sistema ITSM</h1>
-
-        <% if (typeof usuario !== 'undefined' && usuario) { %>
-            <h3>Bem-vindo de volta, <%= usuario.nome %>!</h3>
-            <p>Seu nível de acesso no banco é: <%= usuario.role %></p>
-        <% } else { %>
-            <p>Você está navegando como visitante. Por favor, faça login para acessar o painel.</p>
-        <% } %>
-    </main>
-
+    <%- include('partials/header') %>
+    
+    <%- include('partials/footer') %>
 </body>
 </html>
-
-<p>index</p>
-
-<%- include('partials/header') %>
-
-<a href="/base-de-conhecimento">Base de Conhecimento</a>
-<a href="/cadastro">Cadastro</a>
-<a href="/catalogo-servicos">Catálogo de Serviços</a>
-<a href="/chamados">Chamados</a>
-<a href="/chamados/novo">Novo Chamado</a>
-<a href="/config-sistema">Configuração do Sistema</a>
-<a href="/configuracoes-user">Configurações do Usuário</a>
-<a href="/dashboard">Dashboard</a>
-<a href="/gestao-ativos">Gestão de Ativos</a>
-<a href="/gestao-sla">Gestão de SLA</a>
-<a href="/gestao-usuarios">Gestão de Usuários</a>
-<a href="/IA">Chatbot</a>
-<a href="/IA/relatorios">Relatórios de IA</a>
-<a href="/login">Login</a>
-<a href="/logs">Logs</a>
-<a href="/notificacoes">Notificações</a>
-<a href="/portal-solicitante">Portal do Solicitante</a>

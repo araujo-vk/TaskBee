@@ -8,7 +8,7 @@ module.exports = function (req, res, next) {
   }
 
   // 2. Lista de rotas públicas
-  const rotasPublicas = ['/login', '/cadastro', '/cadastro-empresa', '/index', '/'];
+  const rotasPublicas = ['/login', '/cadastro', '/cadastro-empresa', '/index', '/', '/admin'];
 
   if (rotasPublicas.includes(req.path)) {
     return next();

@@ -3,9 +3,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: var(--cor-branco); /*[cite: 23]*/
+    background-color: var(--cor-branco);
     padding: 15px 30px;
-    border-bottom: 2px solid #eaeaea;
     box-shadow: 0 2px 4px rgba(10, 10, 10, 0.05);
     position: relative;
     z-index: 100;
@@ -32,18 +31,18 @@
 
 .nav-links a {
     text-decoration: none;
-    color: var(--cor-preto); /*[cite: 23]*/
+    color: var(--cor-laranja);
     font-weight: 500;
     transition: color 0.2s ease;
 }
 
 .nav-links a:hover {
-    color: var(--cor-laranja); /*[cite: 23]*/
+    color: var(--cor-amarelo); 
 }
 
 .btn-destaque {
-    background-color: var(--cor-amarelo); /*[cite: 23]*/
-    color: var(--cor-preto) !important; /*[cite: 23]*/
+    background-color: var(--cor-amarelo); 
+    color: var(--cor-preto) !important; 
     padding: 8px 15px;
     border-radius: 6px;
     font-weight: 600;
@@ -51,8 +50,8 @@
 }
 
 .btn-destaque:hover {
-    background-color: var(--cor-laranja); /*[cite: 23]*/
-    color: var(--cor-branco) !important; /*[cite: 23]*/
+    background-color: var(--cor-laranja); 
+    color: var(--cor-branco) !important; 
 }
 
 /* Oculta o botão hambúrguer por padrão em computadores */
@@ -62,7 +61,7 @@
     border: none;
     font-size: 28px;
     cursor: pointer;
-    color: var(--cor-preto); /*[cite: 23]*/
+    color: var(--cor-preto); 
 }
 
 /* --- REGRAS MOBILE --- */
@@ -78,7 +77,7 @@
         position: absolute;
         top: 100%;
         left: 0;
-        background-color: var(--cor-branco); /*[cite: 23]*/
+        background-color: var(--cor-branco); 
         padding: 20px;
         box-shadow: 0 4px 6px rgba(10, 10, 10, 0.1);
         border-bottom: 2px solid #eaeaea;

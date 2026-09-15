@@ -1,10 +1,17 @@
 /* public/css/index.css */
 
+/* Define o fundo laranja contínuo para todo o conteúdo principal */
+main {
+    background-color: var(--cor-laranja);
+    width: 100%;
+}
+
+/* --- HERO SECTION --- */
 .hero-wrapper {
     background-color: var(--cor-laranja);
     width: 100%;
-    padding: 10vh 0;
-    margin-top: 20px;
+    padding: 40px 0 20px 0;
+    margin: 0; /* Removida a margem superior que gerava a barra branca */
 }
 
 .hero-container {
@@ -17,7 +24,7 @@
     padding: 50px;
     background-color: var(--cor-branco);
     border-radius: 16px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
     gap: 40px;
 }
 
@@ -81,11 +88,11 @@
     100% { transform: translateY(0); }
 }
 
-/* --- SEÇÃO SOBRE (Fundo Laranja + Cards) --- */
+/* --- SEÇÃO SOBRE (CARDS) --- */
 .sobre-wrapper {
     background-color: var(--cor-laranja);
-    padding: 60px 0;
-    margin-top: 60px;
+    padding: 20px 0 60px 0;
+    margin: 0; /* Removido o espaçamento entre seções */
     width: 100%;
 }
 
@@ -158,7 +165,6 @@
     }
     .hero-texto h1 { font-size: 2.5rem; }
     .hero-imagem img { width: 250px; margin-top: 20px; }
-    .sobre-wrapper { padding: 40px 0; }
+    .sobre-wrapper { padding: 20px 0 40px 0; }
     .section-title { font-size: 2rem; }
 }
-

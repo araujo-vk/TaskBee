@@ -1,94 +1,100 @@
-<p>gestão de usuários</p>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Usuários - TaskBee</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/chamados.css"> <!-- Reutilizando o layout da tabela -->
+    <link rel="stylesheet" href="/css/gestao.css">
+    <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
+</head>
+<body>
+    <%- include('partials/header') %>
 
-<p>Tenant ID: <%= tenantId %></p>
+    <main class="conteudo-chamados">
+        <div class="cabecalho-chamados">
+            <h2>Gestão de Usuários</h2>
+            <span class="badge-tenant">Tenant ID: <strong><%= tenantId %></strong></span>
+        </div>
 
-<p>Tabela de Usuários ativos</p>
-<table border="1">
-    <tr>
-        <th><a href="/gestao-usuarios?sortAtivos=nome&orderAtivos=<%= sortAtivosAtual === 'nome' && orderAtivosAtual === 'asc' ? 'desc' : 'asc' %>">Nome</a></th>
-        <th><a href="/gestao-usuarios?sortAtivos=departamento&orderAtivos=<%= sortAtivosAtual === 'departamento' && orderAtivosAtual === 'asc' ? 'desc' : 'asc' %>">Departamento</a></th>
-        <th><a href="/gestao-usuarios?sortAtivos=role&orderAtivos=<%= sortAtivosAtual === 'role' && orderAtivosAtual === 'asc' ? 'desc' : 'asc' %>">Nível de Acesso</a></th>
-        <th><a href="/gestao-usuarios?sortAtivos=email&orderAtivos=<%= sortAtivosAtual === 'email' && orderAtivosAtual === 'asc' ? 'desc' : 'asc' %>">E-mail</a></th>
-        <th><a href="/gestao-usuarios?sortAtivos=data&orderAtivos=<%= sortAtivosAtual === 'data' && orderAtivosAtual === 'asc' ? 'desc' : 'asc' %>">Data de Criação</a></th>
-    <th>Editar</th>
-    </tr>
+        <h3 class="subtitulo-secao">Usuários Pendentes de Aprovação</h3>
+        <div class="tabela-responsiva margin-bottom-grande">
+            <table class="tabela-chamados">
+                <thead>
+                    <tr>
+                        <% const ativosParams = `sortAtivos=${sortAtivosAtual}&orderAtivos=${orderAtivosAtual}`; %>
+                        <th><a href="/gestao-usuarios?<%= ativosParams %>&sortPendentes=nome&orderPendentes=<%= sortPendentesAtual === 'nome' && orderPendentesAtual === 'asc' ? 'desc' : 'asc' %>">Nome</a></th>
+                        <th><a href="/gestao-usuarios?<%= ativosParams %>&sortPendentes=departamento&orderPendentes=<%= sortPendentesAtual === 'departamento' && orderPendentesAtual === 'asc' ? 'desc' : 'asc' %>">Departamento</a></th>
+                        <th><a href="/gestao-usuarios?<%= ativosParams %>&sortPendentes=role&orderPendentes=<%= sortPendentesAtual === 'role' && orderPendentesAtual === 'asc' ? 'desc' : 'asc' %>">Perfil Solicitado</a></th>
+                        <th><a href="/gestao-usuarios?<%= ativosParams %>&sortPendentes=email&orderPendentes=<%= sortPendentesAtual === 'email' && orderPendentesAtual === 'asc' ? 'desc' : 'asc' %>">E-mail</a></th>
+                        <th><a href="/gestao-usuarios?<%= ativosParams %>&sortPendentes=data&orderPendentes=<%= sortPendentesAtual === 'data' && orderPendentesAtual === 'asc' ? 'desc' : 'asc' %>">Data da Solicitação</a></th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (typeof usuariosPendentes !== 'undefined' && usuariosPendentes.length > 0) { %>
+                        <% usuariosPendentes.forEach(usuario => { %>
+                            <tr>
+                                <td><strong><%= usuario.nome %></strong></td>
+                                <td><%= usuario.departamento || 'Não informado' %></td>
+                                <td><%= usuario.role %></td>
+                                <td><%= usuario.email %></td>
+                                <td><%= usuario.dataCriacao.toLocaleDateString('pt-BR') %></td>
+                                <td>
+                                    <div class="botoes-acao-linha">
+                                        <form action="/gestao-usuarios/processar" method="POST">
+                                            <input type="hidden" name="usuarioId" value="<%= usuario.id %>">
+                                            <input type="hidden" name="acao" value="aceitar">
+                                            <button type="submit" class="btn-aceitar">Aceitar</button>
+                                        </form>
+                                        <form action="/gestao-usuarios/processar" method="POST">
+                                            <input type="hidden" name="usuarioId" value="<%= usuario.id %>">
+                                            <input type="hidden" name="acao" value="rejeitar">
+                                            <button type="submit" class="btn-rejeitar">Rejeitar</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr><td colspan="6" style="text-align: center; padding: 30px;">Nenhum pedido de vinculação pendente.</td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
 
-    <% usuariosAtivos.forEach(usuario => { %>
-    <tr>
-        <td><%= usuario.nome %></td>
-        <td><%= usuario.departamento || 'Sem departamento' %></td>
-        <td><%= usuario.role %></td>
-        <td><%= usuario.email %></td>
-        <td><%= usuario.dataCriacao ? new Date(usuario.dataCriacao).toLocaleDateString('pt-BR') : '' %></td>
-        <td><a href="/gestao-usuarios/editar/<%= usuario.id %>">Editar</a></td>
-    </tr>
-    <% }) %>
-</table>
+        <hr style="border: 1px solid #eee; margin: 40px 0;">
 
-<h2>Usuários Pendentes de Aprovação</h2>
-<table border="1">
-    <thead>
-        <tr>
-            <%
-                const ativosParams = `sortAtivos=${sortAtivosAtual}&orderAtivos=${orderAtivosAtual}`;
-            %>
+        <h3 class="subtitulo-secao">Usuários Ativos</h3>
+        <div class="tabela-responsiva">
+            <table class="tabela-chamados">
+                <thead>
+                    <tr>
+                        <th><a href="/gestao-usuarios?sortAtivos=nome&orderAtivos=<%= sortAtivosAtual === 'nome' && orderAtivosAtual === 'asc' ? 'desc' : 'asc' %>">Nome</a></th>
+                        <th><a href="/gestao-usuarios?sortAtivos=departamento&orderAtivos=<%= sortAtivosAtual === 'departamento' && orderAtivosAtual === 'asc' ? 'desc' : 'asc' %>">Departamento</a></th>
+                        <th><a href="/gestao-usuarios?sortAtivos=role&orderAtivos=<%= sortAtivosAtual === 'role' && orderAtivosAtual === 'asc' ? 'desc' : 'asc' %>">Nível de Acesso</a></th>
+                        <th><a href="/gestao-usuarios?sortAtivos=email&orderAtivos=<%= sortAtivosAtual === 'email' && orderAtivosAtual === 'asc' ? 'desc' : 'asc' %>">E-mail</a></th>
+                        <th><a href="/gestao-usuarios?sortAtivos=data&orderAtivos=<%= sortAtivosAtual === 'data' && orderAtivosAtual === 'asc' ? 'desc' : 'asc' %>">Data de Criação</a></th>
+                        <th>Editar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% usuariosAtivos.forEach(usuario => { %>
+                    <tr>
+                        <td><strong><%= usuario.nome %></strong></td>
+                        <td><%= usuario.departamento || 'Sem departamento' %></td>
+                        <td><span class="tag-role"><%= usuario.role %></span></td>
+                        <td><%= usuario.email %></td>
+                        <td><%= usuario.dataCriacao ? new Date(usuario.dataCriacao).toLocaleDateString('pt-BR') : '' %></td>
+                        <td><a href="/gestao-usuarios/editar/<%= usuario.id %>" class="link-detalhes">Editar</a></td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </main>
 
-            <th>
-                <a href="/gestao-usuarios?<%= ativosParams %>&sortPendentes=nome&orderPendentes=<%= sortPendentesAtual === 'nome' && orderPendentesAtual === 'asc' ? 'desc' : 'asc' %>">
-                    Nome
-                </a>
-            </th>
-            <th>
-                <a href="/gestao-usuarios?<%= ativosParams %>&sortPendentes=departamento&orderPendentes=<%= sortPendentesAtual === 'departamento' && orderPendentesAtual === 'asc' ? 'desc' : 'asc' %>">
-                    Departamento
-                </a>
-            </th>
-            <th>
-                <a href="/gestao-usuarios?<%= ativosParams %>&sortPendentes=role&orderPendentes=<%= sortPendentesAtual === 'role' && orderPendentesAtual === 'asc' ? 'desc' : 'asc' %>">
-                    Perfil Solicitado
-                </a>
-            </th>
-            <th>
-                <a href="/gestao-usuarios?<%= ativosParams %>&sortPendentes=email&orderPendentes=<%= sortPendentesAtual === 'email' && orderPendentesAtual === 'asc' ? 'desc' : 'asc' %>">
-                    E-mail
-                </a>
-            </th>
-            <th>
-                <a href="/gestao-usuarios?<%= ativosParams %>&sortPendentes=data&orderPendentes=<%= sortPendentesAtual === 'data' && orderPendentesAtual === 'asc' ? 'desc' : 'asc' %>">
-                    Data da Solicitação
-                </a>
-            </th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        <% if (typeof usuariosPendentes !== 'undefined' && usuariosPendentes.length > 0) { %>
-            <% usuariosPendentes.forEach(usuario => { %>
-                <tr>
-                    <td><%= usuario.nome %></td>
-                    <td><%= usuario.departamento || 'Não informado' %></td>
-                    <td><%= usuario.role %></td>
-                    <td><%= usuario.email %></td>
-                    <td><%= usuario.dataCriacao.toLocaleDateString('pt-BR') %></td>
-                    <td>
-                        <form action="/gestao-usuarios/processar" method="POST" style="display:inline;">
-                            <input type="hidden" name="usuarioId" value="<%= usuario.id %>">
-                            <input type="hidden" name="acao" value="aceitar">
-                            <button type="submit" style="color: green;">Aceitar</button>
-                        </form>
-                        
-                        <form action="/gestao-usuarios/processar" method="POST" style="display:inline;">
-                            <input type="hidden" name="usuarioId" value="<%= usuario.id %>">
-                            <input type="hidden" name="acao" value="rejeitar">
-                            <button type="submit" style="color: red;">Rejeitar</button>
-                        </form>
-                    </td>
-                </tr>
-            <% }); %>
-        <% } else { %>
-            <tr>
-                <td colspan="6" align="center">Nenhum pedido de vinculação pendente.</td>
-            </tr>
-        <% } %>
-    </tbody>
-</table>
+    <%- include('partials/footer') %>
+</body>
+</html>

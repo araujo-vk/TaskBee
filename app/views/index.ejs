@@ -3,21 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home- TaskBee</title>
+    <title>Home - TaskBee</title>
     <link rel="stylesheet" href="/css/global.css">
     <link rel="stylesheet" href="/css/index.css">
     <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
     <%- include('partials/header') %>
-    <div class="container">
-        <div class="texto">
-            <p><b>Na TaskBee seu workflow não para.</b></p>
-            <a href="/cadastro">Junte-se à colmeia</a>
-        </div>
-        <div class="imagem"><img src="/TaskBee-logo.png alt="Imagem TaskBee"></div>
-    </div>
+    
+    <main>
+        <!-- Hero Section com Fundo Laranja -->
+<!-- Hero Section com Fundo Laranja -->
+        <section class="hero-wrapper">
+            <div class="hero-container">
+                <div class="hero-texto">
+                    <h1>Na TaskBee seu workflow <span class="destaque-laranja">não para.</span></h1>
+                    <p>Organize, monitore e otimize seus processos de TI de forma eficiente e intuitiva junto da sua equipe.</p>
+                    <a href="/cadastro" class="btn-primario-grande">Junte-se à colmeia</a>
+                </div>
+                <div class="hero-imagem">
+                    <img src="/TaskBee-logo.png" alt="Logotipo TaskBee">
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção de Recursos (Cards com Fundo Laranja) -->
+        <section class="sobre-wrapper">
+            <div class="sobre-container">
+                <h2 class="section-title">Conheça a TaskBee</h2>
+                
+                <div class="cards-grid">
+                    <!-- Card 1 -->
+                    <div class="card-info">
+                        <h3>O que é a TaskBee?</h3>
+                        <p>A TaskBee é uma plataforma de ITSM (Information Technology Service Management) que oferece soluções para gerenciamento de serviços de TI. Com a TaskBee, você pode organizar, monitorar e otimizar seus processos de TI de forma eficiente e intuitiva, junto da sua equipe.</p>
+                        <a href="/cadastro" class="link-acao">Junte-se à colmeia →</a>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="card-info">
+                        <h3>Como Funciona?</h3>
+                        <p>O TaskBee funciona por meio de tenants, onde cada empresa possui seu espaço próprio para gerenciar seus serviços de TI. Cada tenant é independente, permitindo que as empresas personalizem suas configurações e fluxos de trabalho de acordo com suas necessidades específicas. Crie tickets, atribua tarefas e gere relatórios.</p>
+                        <a href="/sobre" class="link-acao">Saiba mais →</a>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="card-info">
+                        <h3>Por que escolher a TaskBee?</h3>
+                        <p>A TaskBee se destaca por sua abordagem centrada no usuário, oferecendo uma experiência intuitiva. Com recursos avançados de gerenciamento, ajudamos a melhorar a produtividade e reduzir custos. Estamos em constante evolução, incorporando feedback e implementando melhorias contínuas.</p>
+                        <a href="/cadastro-empresa" class="link-acao">Cadastre sua empresa →</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
     <%- include('partials/footer') %>
 </body>
 </html>

@@ -2,11 +2,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --cor-amarelo: #fadc21; /*[cite: 23] */
-    --cor-laranja: #f97316; /*[cite: 23] */
-    --cor-preto: #0a0a0a;   /*[cite: 23] */
-    --cor-branco: #f8fafc;  /*[cite: 23] */
-    --fonte-principal: 'Lexend', sans-serif; /*[cite: 23] */
+    --cor-amarelo: #fadc21; 
+    --cor-laranja: #f97316; 
+    --cor-preto: #0a0a0a;   
+    --cor-branco: #f8fafc;  
+    --fonte-principal: 'Lexend', sans-serif; 
 }
 
 /* Garante que paddings e borders não aumentem a largura total dos elementos */

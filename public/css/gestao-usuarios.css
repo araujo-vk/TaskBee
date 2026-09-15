@@ -1,0 +1,56 @@
+/* public/css/gestao.css */
+
+.badge-tenant {
+    background-color: #f1f5f9;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+}
+
+.subtitulo-secao {
+    color: var(--cor-preto);
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.margin-bottom-grande {
+    margin-bottom: 40px;
+}
+
+.botoes-acao-linha {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-aceitar, .btn-rejeitar {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.2s;
+}
+
+.btn-aceitar {
+    background-color: #10b981; /* Verde */
+    color: white;
+}
+.btn-aceitar:hover { background-color: #059669; }
+
+.btn-rejeitar {
+    background-color: #ef4444; /* Vermelho */
+    color: white;
+}
+.btn-rejeitar:hover { background-color: #dc2626; }
+
+.tag-role {
+    background-color: #fff3e0;
+    color: var(--cor-laranja);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}

@@ -1,0 +1,83 @@
+/* public/css/painel.css */
+
+.subtitulo-painel {
+    color: var(--cor-preto);
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+}
+
+.tag-estado {
+    background-color: #f1f5f9;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+    border: 1px solid #e2e8f0;
+}
+
+/* --- BANNER ASKBEE --- */
+.askbee-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #fff9e6 0%, #fff0c2 100%);
+    border-left: 6px solid var(--cor-laranja);
+    border-radius: 12px;
+    padding: 25px 30px;
+    margin-top: 40px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.askbee-texto h3 {
+    margin: 0 0 10px 0;
+    color: var(--cor-preto);
+    font-size: 1.5rem;
+}
+
+.askbee-texto p {
+    margin: 0;
+    color: #444;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.askbee-texto small {
+    display: block;
+    margin-top: 8px;
+    color: var(--cor-laranja);
+    font-weight: bold;
+}
+
+.btn-askbee {
+    background-color: var(--cor-laranja);
+    color: var(--cor-branco);
+    padding: 12px 25px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(232, 93, 4, 0.3);
+}
+
+.btn-askbee:hover {
+    background-color: #d15202;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(232, 93, 4, 0.4);
+}
+
+/* --- RESPONSIVIDADE ASKBEE --- */
+@media (max-width: 768px) {
+    .askbee-banner {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+        padding: 20px;
+    }
+    
+    .btn-askbee {
+        width: 100%;
+        text-align: center;
+    }
+}

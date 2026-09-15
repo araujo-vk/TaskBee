@@ -1,36 +1,73 @@
-<p>portal solicitante</p>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Solicitante - TaskBee</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/chamados.css"> <!-- Traz o visual da tabela -->
+    <link rel="stylesheet" href="/css/portal-solicitante.css">   <!-- Estilos específicos do banner AskBee -->
+    <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
+</head>
+<body>
+    <%- include('partials/header') %>
+    
+    <main class="conteudo-chamados">
+        <!-- Cabeçalho com o botão de Novo Chamado -->
+        <div class="cabecalho-chamados">
+            <h2>Painel do Solicitante</h2>
+            <a href="/chamados/novo" class="btn-novo-chamado">+ Criar Novo Chamado</a>
+        </div>
 
-<h2>Meus chamados</h2>
+        <h3 class="subtitulo-painel">Meus Chamados</h3>
 
-<table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse;">
-    <thead>
-        <tr style="background-color: #eee;">
-            <th>ID</th>
-            <th>Título</th>
-            <th>Tipo</th>
-            <th>Estado</th>
-            <th>Data</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        <% if (typeof chamados !== 'undefined' && chamados.length > 0) { %>
-            <% chamados.forEach(c => { %>
-                <tr>
-                    <td>#<%= c.id %></td>
-                    <td><%= c.titulo %></td>
-                    <td><%= c.tipo %></td>
-                    <td><strong><%= c.status %></strong></td>
-                    <td><%= new Date(c.dataCriacao).toLocaleDateString('pt-PT') %></td>
-                    <td><a href="/chamados/<%= c.id %>">Ver Detalhes</a></td>
-                </tr>
-            <% }) %>
-        <% } else { %>
-            <tr>
-                <td colspan="6" style="text-align: center;">Você ainda não possui nenhum chamado aberto.</td>
-            </tr>
-        <% } %>
-    </tbody>
-</table>
+        <!-- Tabela de Chamados -->
+        <div class="tabela-responsiva">
+            <table class="tabela-chamados">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Tipo</th>
+                        <th>Estado</th>
+                        <th>Data</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (typeof chamados !== 'undefined' && chamados.length > 0) { %>
+                        <% chamados.forEach(c => { %>
+                            <tr>
+                                <td>#<%= c.id %></td>
+                                <td><strong><%= c.titulo %></strong></td>
+                                <td><%= c.tipo %></td>
+                                <td><span class="tag-estado"><%= c.status %></span></td>
+                                <td><%= new Date(c.dataCriacao).toLocaleDateString('pt-PT') %></td>
+                                <td><a href="/chamados/<%= c.id %>" class="link-detalhes">Ver Detalhes</a></td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 30px;">
+                                Você ainda não possui nenhum chamado aberto.
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
 
-<a href="/chamados/novo" style="display: inline-block; margin-top: 15px;">+ Criar Novo Chamado</a>
+        <!-- Banner Promocional do AskBee -->
+        <div class="askbee-banner">
+            <div class="askbee-texto">
+                <h3>Conheça o AskBee!</h3>
+                <p>Teste nosso chatbot especializado para tentar resolver seu ticket de maneira mais rápida e eficiente!</p>
+                <small>(Função ainda em desenvolvimento)</small>
+            </div>
+            <a href="/IA" class="btn-askbee">Falar com a IA →</a>
+        </div>
+    </main>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

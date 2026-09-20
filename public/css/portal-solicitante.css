@@ -1,18 +1,19 @@
-/* public/css/painel.css */
+/* public/css/portal-solicitante.css */
 
 .subtitulo-painel {
-    color: var(--cor-preto);
+    color: var(--texto-principal);
     margin-bottom: 20px;
     font-size: 1.3rem;
 }
 
 .tag-estado {
-    background-color: #f1f5f9;
+    background-color: var(--bg-input);
     padding: 6px 12px;
     border-radius: 20px;
     font-weight: 600;
     font-size: 13px;
-    border: 1px solid #e2e8f0;
+    color: var(--texto-secundario);
+    border: 1px solid var(--borda-elemento);
 }
 
 /* --- BANNER ASKBEE --- */
@@ -20,7 +21,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(135deg, #fff9e6 0%, #fff0c2 100%);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(232, 93, 4, 0.12) 100%);
     border-left: 6px solid var(--cor-laranja);
     border-radius: 12px;
     padding: 25px 30px;
@@ -30,13 +31,13 @@
 
 .askbee-texto h3 {
     margin: 0 0 10px 0;
-    color: var(--cor-preto);
+    color: var(--texto-principal);
     font-size: 1.5rem;
 }
 
 .askbee-texto p {
     margin: 0;
-    color: #444;
+    color: var(--texto-secundario);
     font-size: 1rem;
     line-height: 1.5;
 }
@@ -50,7 +51,7 @@
 
 .btn-askbee {
     background-color: var(--cor-laranja);
-    color: var(--cor-branco);
+    color: #ffffff;
     padding: 12px 25px;
     text-decoration: none;
     font-weight: bold;
@@ -67,7 +68,6 @@
     box-shadow: 0 6px 15px rgba(232, 93, 4, 0.4);
 }
 
-/* --- RESPONSIVIDADE ASKBEE --- */
 @media (max-width: 768px) {
     .askbee-banner {
         flex-direction: column;

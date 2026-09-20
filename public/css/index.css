@@ -1,17 +1,15 @@
 /* public/css/index.css */
 
-/* Define o fundo laranja contínuo para todo o conteúdo principal */
 main {
     background-color: var(--cor-laranja);
     width: 100%;
 }
 
-/* --- HERO SECTION --- */
 .hero-wrapper {
     background-color: var(--cor-laranja);
     width: 100%;
     padding: 40px 0 20px 0;
-    margin: 0; /* Removida a margem superior que gerava a barra branca */
+    margin: 0;
 }
 
 .hero-container {
@@ -22,7 +20,7 @@ main {
     max-width: 1200px;
     margin: 0 auto;
     padding: 50px;
-    background-color: var(--cor-branco);
+    background-color: var(--bg-cartao);
     border-radius: 16px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
     gap: 40px;
@@ -35,7 +33,7 @@ main {
 .hero-texto h1 {
     font-size: 3.5rem;
     line-height: 1.1;
-    color: var(--cor-preto);
+    color: var(--texto-principal);
     margin-bottom: 20px;
 }
 
@@ -45,7 +43,7 @@ main {
 
 .hero-texto p {
     font-size: 1.2rem;
-    color: #555;
+    color: var(--texto-secundario);
     margin-bottom: 35px;
     line-height: 1.6;
 }
@@ -64,7 +62,7 @@ main {
 
 .btn-primario-grande {
     background-color: var(--cor-amarelo);
-    color: var(--cor-preto);
+    color: #0a0a0a;
     padding: 15px 35px;
     font-size: 1.1rem;
     font-weight: bold;
@@ -88,11 +86,10 @@ main {
     100% { transform: translateY(0); }
 }
 
-/* --- SEÇÃO SOBRE (CARDS) --- */
 .sobre-wrapper {
     background-color: var(--cor-laranja);
     padding: 20px 0 60px 0;
-    margin: 0; /* Removido o espaçamento entre seções */
+    margin: 0;
     width: 100%;
 }
 
@@ -106,7 +103,7 @@ main {
     text-align: center;
     font-size: 2.5rem;
     margin-bottom: 40px;
-    color: var(--cor-branco);
+    color: #ffffff;
 }
 
 .cards-grid {
@@ -116,7 +113,7 @@ main {
 }
 
 .card-info {
-    background: var(--cor-branco);
+    background: var(--bg-cartao);
     padding: 35px;
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
@@ -132,12 +129,12 @@ main {
 
 .card-info h3 {
     margin-top: 0;
-    color: var(--cor-preto);
+    color: var(--texto-principal);
     font-size: 1.5rem;
 }
 
 .card-info p {
-    color: #555;
+    color: var(--texto-secundario);
     line-height: 1.6;
     flex-grow: 1;
 }
@@ -153,10 +150,9 @@ main {
 }
 
 .link-acao:hover {
-    color: var(--cor-preto);
+    color: var(--texto-principal);
 }
 
-/* --- RESPONSIVIDADE (Mobile) --- */
 @media (max-width: 768px) {
     .hero-container {
         flex-direction: column;

@@ -4,7 +4,7 @@
     max-width: 800px;
     margin: 40px auto;
     padding: 30px;
-    background-color: var(--cor-branco);
+    background-color: var(--bg-cartao);
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
@@ -13,13 +13,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid #eee;
+    border-bottom: 2px solid var(--borda-elemento);
     padding-bottom: 15px;
     margin-bottom: 20px;
 }
 
 .badge-status {
     background-color: var(--cor-amarelo);
+    color: #0a0a0a;
     padding: 6px 12px;
     border-radius: 20px;
     font-weight: bold;
@@ -31,7 +32,7 @@
 }
 
 .descricao-box {
-    background: #f8fafc;
+    background: var(--bg-input);
     border-left: 4px solid var(--cor-laranja);
     padding: 15px;
     margin: 25px 0;
@@ -39,7 +40,7 @@
 }
 
 .alterar-status {
-    background: #fff3e0;
+    background: rgba(249, 115, 22, 0.1); /* Laranja com 10% de transparência (Funciona em ambos modos) */
     padding: 20px;
     border-radius: 8px;
     margin-bottom: 25px;
@@ -54,7 +55,9 @@
     flex: 1;
     padding: 10px;
     border-radius: 6px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--borda-elemento);
+    background-color: var(--bg-input);
+    color: var(--texto-principal);
 }
 
 .alterar-status button {
@@ -68,7 +71,7 @@
 }
 
 .link-voltar {
-    color: var(--cor-preto);
+    color: var(--texto-principal);
     text-decoration: none;
     font-weight: bold;
 }

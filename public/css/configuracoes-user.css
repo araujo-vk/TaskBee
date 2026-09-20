@@ -1,6 +1,5 @@
 /* public/css/configuracoes-user.css */
 
-/* --- ESTRUTURA PRINCIPAL --- */
 .conteudo-config {
     width: 90%;
     max-width: 1200px;
@@ -12,11 +11,10 @@
 }
 
 .cabecalho-config h2 {
-    color: var(--cor-preto);
+    color: var(--texto-principal);
     font-size: 2rem;
 }
 
-/* Grid para separar o Perfil do Formulário */
 .config-grid {
     display: grid;
     grid-template-columns: 350px 1fr;
@@ -24,9 +22,8 @@
     align-items: start;
 }
 
-/* --- CARTÃO DE PERFIL (Esquerda) --- */
 .perfil-card {
-    background-color: var(--cor-branco);
+    background-color: var(--bg-cartao);
     padding: 40px 30px;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
@@ -36,7 +33,7 @@
 
 .avatar-perfil {
     font-size: 3rem;
-    background-color: #fff3e0;
+    background-color: rgba(245, 158, 11, 0.15); /* Adaptado para não ficar muito claro no escuro */
     width: 80px;
     height: 80px;
     line-height: 80px;
@@ -46,7 +43,7 @@
 
 .perfil-card h3 {
     margin: 0 0 10px 0;
-    color: var(--cor-preto);
+    color: var(--texto-principal);
     font-size: 1.4rem;
 }
 
@@ -59,7 +56,6 @@
     margin-bottom: 25px;
 }
 
-/* Cores dinâmicas para os níveis de acesso */
 .tag-role.admin { background-color: #fee2e2; color: #ef4444; }
 .tag-role.gestor { background-color: #e0f2fe; color: #0ea5e9; }
 .tag-role.tecnico { background-color: #fef3c7; color: #d97706; }
@@ -68,7 +64,7 @@
 .divisor-perfil {
     border: 0;
     height: 1px;
-    background-color: #e2e8f0;
+    background-color: var(--borda-elemento);
     margin: 25px 0;
 }
 
@@ -81,7 +77,7 @@
 
 .info-title {
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--texto-secundario);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-weight: bold;
@@ -89,7 +85,7 @@
 }
 
 .info-value {
-    color: var(--cor-preto);
+    color: var(--texto-principal);
     font-size: 1rem;
     font-weight: 500;
 }
@@ -104,9 +100,8 @@
     border: 1px dashed var(--cor-amarelo);
 }
 
-/* --- CARTÃO DE FORMULÁRIO (Direita) --- */
 .form-card {
-    background-color: var(--cor-branco);
+    background-color: var(--bg-cartao);
     padding: 40px;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
@@ -115,14 +110,14 @@
 .form-card h3 {
     margin-top: 0;
     margin-bottom: 30px;
-    color: var(--cor-preto);
+    color: var(--texto-principal);
     font-size: 1.5rem;
 }
 
 .subtitulo-form {
     margin: 30px 0 20px 0;
-    color: var(--cor-preto);
-    border-bottom: 2px solid #f1f5f9;
+    color: var(--texto-principal);
+    border-bottom: 2px solid var(--borda-elemento);
     padding-bottom: 10px;
 }
 
@@ -141,24 +136,24 @@
 .form-group label {
     margin-bottom: 8px;
     font-weight: bold;
-    color: #334155;
+    color: var(--texto-secundario);
     font-size: 0.95rem;
 }
 
 .form-group input {
     padding: 12px 15px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--borda-elemento);
     border-radius: 8px;
     font-size: 1rem;
-    color: #333;
+    color: var(--texto-principal);
     transition: all 0.3s ease;
-    background-color: #f8fafc;
+    background-color: var(--bg-input);
 }
 
 .form-group input:focus {
     outline: none;
     border-color: var(--cor-laranja);
-    background-color: var(--cor-branco);
+    background-color: var(--bg-cartao);
     box-shadow: 0 0 0 3px rgba(232, 93, 4, 0.1);
 }
 
@@ -170,7 +165,7 @@
 
 .btn-salvar {
     background-color: var(--cor-laranja);
-    color: var(--cor-branco);
+    color: #ffffff;
     padding: 14px 30px;
     border: none;
     border-radius: 8px;
@@ -188,30 +183,6 @@
     box-shadow: 0 6px 15px rgba(232, 93, 4, 0.4);
 }
 
-/* --- RESPONSIVIDADE (Telemóvel) --- */
-@media (max-width: 900px) {
-    .config-grid {
-        grid-template-columns: 1fr; /* Empilha as colunas */
-    }
-
-    .form-row {
-        grid-template-columns: 1fr; /* Inputs de senha empilhados */
-    }
-
-    .form-card {
-        padding: 25px;
-    }
-
-    .botoes-acao {
-        justify-content: center;
-    }
-
-    .btn-salvar {
-        width: 100%;
-    }
-}
-
-/* --- FEEDBACK DE MENSAGENS DO BACKEND --- */
 .feedback-msg {
     padding: 15px 20px;
     border-radius: 8px;
@@ -221,21 +192,20 @@
 }
 
 .feedback-msg.erro {
-    background-color: #fef2f2;
+    background-color: rgba(239, 68, 68, 0.1);
     color: #ef4444;
     border: 1px solid #fca5a5;
 }
 
 .feedback-msg.sucesso {
-    background-color: #f0fdf4;
+    background-color: rgba(22, 163, 74, 0.1);
     color: #16a34a;
     border: 1px solid #86efac;
 }
 
-/* --- FEEDBACK VISUAL DAS SENHAS (TEMPO REAL) --- */
 .dica-senha {
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--texto-secundario);
     margin-top: -15px;
     margin-bottom: 20px;
 }
@@ -247,24 +217,33 @@
     display: block;
 }
 
-/* Classes injetadas pelo Javascript quando as senhas não batem */
 .form-group input.input-erro {
     border-color: #ef4444 !important;
-    background-color: #fef2f2;
+    background-color: rgba(239, 68, 68, 0.05);
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
 }
 
 .form-group input.input-sucesso {
     border-color: #16a34a !important;
-    background-color: #f0fdf4;
+    background-color: rgba(22, 163, 74, 0.05);
     box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1) !important;
 }
 
-/* --- REFORÇO NA RESPONSIVIDADE JÁ EXISTENTE --- */
 @media (max-width: 900px) {
-    /* Garante que o grid de senhas fique um debaixo do outro no telemóvel */
-    .form-row {
-        grid-template-columns: 1fr !important;
-        gap: 10px !important;
-    }
+    .config-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr !important; gap: 10px !important; }
+    .form-card { padding: 25px; }
+    .botoes-acao { justify-content: center; }
+    .btn-salvar { width: 100%; }
+}
+
+body.dark-mode .tag-role.admin { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+body.dark-mode .tag-role.gestor { background-color: rgba(14, 165, 233, 0.15); color: #7dd3fc; }
+body.dark-mode .tag-role.tecnico { background-color: rgba(217, 119, 6, 0.15); color: #fcd34d; }
+body.dark-mode .tag-role.user { background-color: rgba(71, 85, 105, 0.2); color: #cbd5e1; }
+
+body.dark-mode .abelha-badge {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(232, 93, 4, 0.1) 100%);
+    color: var(--cor-amarelo);
+    border-color: var(--cor-laranja);
 }

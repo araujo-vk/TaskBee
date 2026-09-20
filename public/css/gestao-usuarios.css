@@ -1,16 +1,16 @@
-/* public/css/gestao.css */
+/* public/css/gestao-usuarios.css */
 
 .badge-tenant {
-    background-color: #f1f5f9;
+    background-color: var(--bg-input);
     padding: 8px 15px;
     border-radius: 20px;
     font-size: 14px;
-    color: #334155;
-    border: 1px solid #e2e8f0;
+    color: var(--texto-secundario);
+    border: 1px solid var(--borda-elemento);
 }
 
 .subtitulo-secao {
-    color: var(--cor-preto);
+    color: var(--texto-principal);
     margin-bottom: 15px;
     font-size: 1.3rem;
 }
@@ -35,19 +35,19 @@
 }
 
 .btn-aceitar {
-    background-color: #10b981; /* Verde */
+    background-color: #10b981;
     color: white;
 }
 .btn-aceitar:hover { background-color: #059669; }
 
 .btn-rejeitar {
-    background-color: #ef4444; /* Vermelho */
+    background-color: #ef4444;
     color: white;
 }
 .btn-rejeitar:hover { background-color: #dc2626; }
 
 .tag-role {
-    background-color: #fff3e0;
+    background-color: rgba(249, 115, 22, 0.15);
     color: var(--cor-laranja);
     padding: 4px 10px;
     border-radius: 12px;

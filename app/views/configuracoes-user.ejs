@@ -7,6 +7,37 @@
     <link rel="stylesheet" href="/css/global.css">
     <link rel="stylesheet" href="/css/configuracoes-user.css">
     <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
+    
+    <script>
+        (function() {
+            // Usa 'locals.usuario' para evitar erros caso o usuário não esteja logado
+            const backendTheme = '<%= (locals.usuario && usuario.tema) ? usuario.tema : "" %>';
+            const localTheme = localStorage.getItem('tema');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            let themeToApply = 'light';
+            
+            // 1. Se houver preferência vinda do banco de dados (usuário logado)
+            if (backendTheme && backendTheme !== 'system' && backendTheme !== '') {
+                themeToApply = backendTheme;
+            } 
+            // 2. Se houver preferência no localStorage (visitante que já mudou o tema)
+            else if (localTheme && localTheme !== 'system' && localTheme !== '') {
+                themeToApply = localTheme;
+            } 
+            // 3. Senão, adota a preferência do sistema operacional/navegador
+            else if (systemPrefersDark) {
+                themeToApply = 'dark';
+            }
+            
+            // Aplica imediatamente na tag <html> para evitar a tela branca ao carregar
+            if (themeToApply === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
 </head>
 <body>
     <%- include('partials/header') %>
@@ -18,12 +49,11 @@
 
         <div class="config-grid">
             
-            <!-- COLUNA ESQUERDA: Cartão de Perfil (Leitura) -->
+            <!-- COLUNA ESQUERDA: Cartão de Perfil -->
             <aside class="perfil-card">
                 <div class="avatar-perfil">🐝</div>
                 <h3><%= usuario.nome %></h3>
                 
-                <!-- Alterado de === para == para garantir que funcione independente do tipo (String/Number) -->
                 <% 
                     let roleName = "Usuário"; 
                     let roleClass = "user"; 
@@ -42,13 +72,11 @@
 
                 <div class="info-group">
                     <span class="info-title">CNPJ do Tenant</span>
-                    <!-- Atualizado para refletir o alias da query SQL -->
                     <span class="info-value"><%= usuario.cnpj_tenant || 'N/A' %></span>
                 </div>
 
                 <div class="info-group">
                     <span class="info-title">Data de Criação</span>
-                    <!-- Adicionada uma verificação simples caso created_at venha vazio -->
                     <span class="info-value">
                         <%= usuario.created_at ? new Date(usuario.created_at).toLocaleDateString('pt-PT') : '--' %>
                     </span>
@@ -65,7 +93,6 @@
             <section class="form-card">
                 <h3>Editar Informações</h3>
 
-                <!-- Avisos de Sucesso ou Erro vindos do Backend -->
                 <% if (typeof erro !== 'undefined' && erro) { %>
                     <div class="feedback-msg erro"><%= erro %></div>
                 <% } %>
@@ -73,8 +100,19 @@
                     <div class="feedback-msg sucesso"><%= sucesso %></div>
                 <% } %>
 
+                <!-- SEÇÃO DE PREFERÊNCIA DE TEMA DA INTERFACE -->
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <label for="seletor-tema">Aparência do Sistema</label>
+                    <select id="seletor-tema" class="select-config">
+                        <option value="system">Padrão do Sistema (Automático)</option>
+                        <option value="light">Modo Claro</option>
+                        <option value="dark">Modo Escuro</option>
+                    </select>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--borda-elemento); margin-bottom: 20px;">
+
                 <form action="/configuracoes-user/update" method="POST" class="form-config">
-                    
                     <div class="form-group">
                         <label for="nome">Nome do Usuário</label>
                         <input type="text" id="nome" name="nome" value="<%= usuario.nome %>" required>
@@ -107,15 +145,53 @@
                 </form>
             </section>
 
-            <!-- Script para feedback visual das senhas em tempo real -->
+            <!-- Script de Validação de Senha e Troca de Tema -->
             <script>
+                // --- LÓGICA DO SELETOR DE TEMA ---
+                const seletorTema = document.getElementById('seletor-tema');
+                
+                // Define a opção selecionada no carregamento
+                const temaAtualBackend = '<%= usuario.tema %>';
+                seletorTema.value = temaAtualBackend || localStorage.getItem('tema') || 'system';
+
+                seletorTema.addEventListener('change', async (e) => {
+                    const novoTema = e.target.value;
+
+                    // 1. Aplica as mudanças no DOM imediatamente
+                    if (novoTema === 'dark') {
+                        document.documentElement.classList.add('dark-mode');
+                    } else if (novoTema === 'light') {
+                        document.documentElement.classList.remove('dark-mode');
+                    } else {
+                        // Se selecionou 'system', checa a preferência do SO/Navegador
+                        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                        document.documentElement.classList.toggle('dark-mode', systemPrefersDark);
+                    }
+
+                    // 2. Salva localmente
+                    localStorage.setItem('tema', novoTema);
+
+                    // 3. Atualiza no backend sem recarregar a página
+                    try {
+                        await fetch('/api/atualizar-tema', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ tema: novoTema })
+                        });
+                    } catch (error) {
+                        console.error('Erro ao salvar preferência no servidor:', error);
+                    }
+                });
+
+                // --- LÓGICA DE VALIDAÇÃO DE SENHAS ---
                 const inputSenha = document.getElementById('senha');
                 const inputConfirmar = document.getElementById('confirmar-senha');
                 const btnSalvar = document.getElementById('btn-salvar');
                 const msgSenha = document.getElementById('mensagem-senha');
 
                 function validarSenhas() {
-                    // Se houver texto em qualquer um dos campos
                     if (inputSenha.value || inputConfirmar.value) {
                         if (inputSenha.value !== inputConfirmar.value) {
                             inputConfirmar.classList.add('input-erro');
@@ -135,7 +211,6 @@
                             btnSalvar.style.cursor = 'pointer';
                         }
                     } else {
-                        // Se ambos estiverem vazios (só quer alterar nome/email)
                         inputConfirmar.classList.remove('input-erro', 'input-sucesso');
                         msgSenha.textContent = "";
                         btnSalvar.disabled = false;

@@ -1,23 +1,24 @@
 /* public/css/painel-forms.css */
+
 .container-form {
     width: 90%;
     max-width: 600px;
     margin: 40px auto;
     padding: 30px;
-    background-color: var(--cor-branco);
+    background-color: var(--bg-cartao);
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(10, 10, 10, 0.05);
-    border: 1px solid #eaeaea;
+    border: 1px solid var(--borda-elemento);
     border-top: 5px solid var(--cor-amarelo);
 }
 
 .container-form h2 {
     margin-top: 0;
-    color: var(--cor-preto);
+    color: var(--texto-principal);
 }
 
 .subtitulo {
-    color: #555;
+    color: var(--texto-secundario);
     font-size: 14px;
     margin-bottom: 20px;
 }
@@ -27,6 +28,7 @@
     font-weight: 500;
     margin-top: 15px;
     margin-bottom: 5px;
+    color: var(--texto-principal);
 }
 
 .container-form input, 
@@ -34,10 +36,12 @@
 .container-form textarea {
     width: 100%;
     padding: 12px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--borda-elemento);
     border-radius: 6px;
     font-family: var(--fonte-principal);
     font-size: 14px;
+    background-color: var(--bg-input);
+    color: var(--texto-principal);
 }
 
 .container-form input:focus, 
@@ -57,7 +61,7 @@
     flex: 1;
     padding: 12px;
     background-color: var(--cor-amarelo);
-    color: var(--cor-preto);
+    color: #0a0a0a;
     border: none;
     border-radius: 6px;
     font-weight: bold;
@@ -67,13 +71,14 @@
 
 .btn-principal:hover {
     background-color: var(--cor-laranja);
-    color: var(--cor-branco);
+    color: #ffffff;
 }
 
 .btn-secundario {
     padding: 12px 20px;
-    background-color: #eee;
-    color: var(--cor-preto);
+    background-color: var(--bg-input);
+    color: var(--texto-principal);
+    border: 1px solid var(--borda-elemento);
     text-decoration: none;
     border-radius: 6px;
     font-weight: bold;
@@ -83,7 +88,7 @@
 .btn-deletar {
     display: block;
     text-align: center;
-    color: red;
+    color: #ef4444;
     font-weight: bold;
     text-decoration: none;
     margin-top: 15px;

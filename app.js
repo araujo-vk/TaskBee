@@ -17,14 +17,15 @@ app.use(session({
   cookie: { maxAge: 1000 * 60 * 60 } // Mantém logado por 1 hora
 }));
 
+// ... (Seus outros imports e configurações iniciais)
+
 // 3. Agora sim, aplicamos o bloqueio de autenticação e o banco
 app.use(authMiddleware);
 app.use(bancoMiddleware);
 
-// ... (O resto do seu código com require('./app/routes/index')(app) continua igual daqui para baixo)
-require('./app/routes/index')(app);
+// REMOVIDO: A linha require('./app/routes/index')(app); foi apagada 
+// para evitar que a rota index seja carregada duas vezes, já que o loop fará isso.
 
-//Outras rotas
 const fs = require('fs');
 const path = require('path');
 
@@ -33,21 +34,24 @@ const routesPath = path.join(__dirname, 'app/routes');
 
 // Lê todos os arquivos dentro da pasta
 fs.readdirSync(routesPath).forEach((file) => {
-  // Garante que só vai carregar arquivos JavaScript e ignorar arquivos ocultos/testes
   if (file.endsWith('.js')) {
     const route = require(path.join(routesPath, file));
 
-    // Se o seu arquivo de rota exporta uma função que recebe (app):
+    // Verifica se o que foi exportado é de fato uma função
     if (typeof route === 'function') {
-      route(app);
-    } 
-    // Se o seu arquivo de rota exporta um express.Router():
-    else {
-      app.use('/', route);
+      // O Express.Router() internamente é uma função com o nome 'router'
+      if (route.name === 'router') {
+        app.use('/', route);
+      } else {
+        // Rotas no padrão antigo que recebem a instância do (app) [ex: index_2.js]
+        route(app);
+      }
+    } else {
+      // Ignora arquivos que não exportam funções válidas, prevenindo o erro
+      console.warn(`[Aviso] O arquivo ${file} não exporta uma função ou Router válido e foi ignorado.`);
     }
   }
 });
-
 
 app.listen(3000, function () {
   console.log("Servidor Rodando!");

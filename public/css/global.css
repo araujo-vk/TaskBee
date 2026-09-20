@@ -2,22 +2,47 @@
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
 
 :root {
+    /* --- CORES DA MARCA (Imutáveis) --- */
     --cor-amarelo: #fadc21; 
     --cor-laranja: #f97316; 
+    
+    /* --- VARIÁVEIS ANTIGAS --- */
     --cor-preto: #0a0a0a;   
     --cor-branco: #f8fafc;  
+    
+    /* --- VARIÁVEIS SEMÂNTICAS DO TEMA CLARO --- */
+    --bg-site: var(--cor-branco);
+    --bg-cartao: #ffffff;
+    --texto-principal: var(--cor-preto);
+    --texto-secundario: #64748b;
+    --borda-elemento: #e2e8f0;
+    --bg-input: #f8fafc;
+
     --fonte-principal: 'Lexend', sans-serif; 
 }
 
-/* Garante que paddings e borders não aumentem a largura total dos elementos */
+/* --- MODO ESCURO --- */
+:root.dark-mode, body.dark-mode {
+    --bg-site: #121214;       
+    --bg-cartao: #202024;     
+    --texto-principal: #f8fafc; 
+    --texto-secundario: #a1a1aa; 
+    --borda-elemento: #3f3f46;  
+    --bg-input: #121214;      
+    
+    --cor-branco: #202024; 
+    --cor-preto: #f8fafc;
+}
+
 *, *::before, *::after {
     box-sizing: border-box;
 }
 
 body {
     font-family: var(--fonte-principal);
-    background-color: var(--cor-branco);
-    color: var(--cor-preto);
+    background-color: var(--bg-site);
+    color: var(--texto-principal);
+    transition: background-color 0.3s ease, color 0.3s ease;
     margin: 0;
     padding: 0;
     display: flex;
@@ -25,9 +50,21 @@ body {
     min-height: 100vh;
 }
 
-/* Container para fazer qualquer tabela ter rolagem horizontal no telemóvel */
 .tabela-container {
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+}
+
+body.dark-mode input, 
+body.dark-mode textarea, 
+body.dark-mode select {
+    background-color: var(--bg-input);
+    color: var(--texto-principal);
+    border: 1px solid var(--borda-elemento);
+}
+
+body.dark-mode hr {
+    background-color: var(--borda-elemento);
+    border-color: var(--borda-elemento);
 }

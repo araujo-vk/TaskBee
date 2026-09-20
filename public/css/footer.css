@@ -1,7 +1,7 @@
 /* public/css/footer.css */
 .site-footer {
-    background-color: var(--cor-preto);
-    color: var(--cor-branco);
+    background-color: #0a0a0a; /* Fixo para se manter sempre escuro/elegante */
+    color: #f8fafc; /* Texto claro fixo */
     text-align: center;
     padding: 25px 15px;
     margin-top: auto;
@@ -30,7 +30,6 @@
     color: var(--cor-laranja);
 }
 
-/* --- REGRAS MOBILE --- */
 @media (max-width: 600px) {
     .footer-links {
         flex-direction: column;

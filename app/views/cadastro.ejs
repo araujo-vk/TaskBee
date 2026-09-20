@@ -6,6 +6,37 @@
     <title>Cadastro - TaskBee</title>
     <link rel="stylesheet" href="/css/global.css">
     <link rel="stylesheet" href="/css/cadastro.css">
+    <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
+    <script>
+        (function() {
+            // Usa 'locals.usuario' para evitar erros caso o usuário não esteja logado
+            const backendTheme = '<%= (locals.usuario && usuario.tema) ? usuario.tema : "" %>';
+            const localTheme = localStorage.getItem('tema');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            let themeToApply = 'light';
+            
+            // 1. Se houver preferência vinda do banco de dados (usuário logado)
+            if (backendTheme && backendTheme !== 'system' && backendTheme !== '') {
+                themeToApply = backendTheme;
+            } 
+            // 2. Se houver preferência no localStorage (visitante que já mudou o tema)
+            else if (localTheme && localTheme !== 'system' && localTheme !== '') {
+                themeToApply = localTheme;
+            } 
+            // 3. Senão, adota a preferência do sistema operacional/navegador
+            else if (systemPrefersDark) {
+                themeToApply = 'dark';
+            }
+            
+            // Aplica imediatamente na tag <html> para evitar a tela branca ao carregar
+            if (themeToApply === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
 </head>
 <body>
     <%- include('partials/header') %>

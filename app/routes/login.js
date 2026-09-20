@@ -33,7 +33,8 @@ module.exports = function (app) {
         id: usuario[0].id,
         nome: usuario[0].name,
         role: usuario[0].role_id,
-        tenantId: usuario[0].tenant_id
+        tenantId: usuario[0].tenant_id,
+        tema: usuario[0].tema
       };
 
       // 5. GARANTE que a sessão foi salva antes de mudar de página!

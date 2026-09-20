@@ -1,1 +1,156 @@
-<p>configurações do usuário</p>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações - TaskBee</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/configuracoes-user.css">
+    <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
+</head>
+<body>
+    <%- include('partials/header') %>
+    
+    <main class="conteudo-config">
+        <div class="cabecalho-config">
+            <h2>Configurações da Conta</h2>
+        </div>
+
+        <div class="config-grid">
+            
+            <!-- COLUNA ESQUERDA: Cartão de Perfil (Leitura) -->
+            <aside class="perfil-card">
+                <div class="avatar-perfil">🐝</div>
+                <h3><%= usuario.nome %></h3>
+                
+                <!-- Alterado de === para == para garantir que funcione independente do tipo (String/Number) -->
+                <% 
+                    let roleName = "Usuário"; 
+                    let roleClass = "user"; 
+                    if (usuario.role_id == 1) { roleName = "Administrador"; roleClass = "admin"; } 
+                    else if (usuario.role_id == 2) { roleName = "Gestor"; roleClass = "gestor"; } 
+                    else if (usuario.role_id == 3) { roleName = "Técnico"; roleClass = "tecnico"; } 
+                %>
+                <span class="tag-role <%= roleClass %>"><%= roleName %></span>
+
+                <hr class="divisor-perfil">
+
+                <div class="info-group">
+                    <span class="info-title">Departamento</span>
+                    <span class="info-value"><%= usuario.departamento || 'Não atribuído' %></span>
+                </div>
+
+                <div class="info-group">
+                    <span class="info-title">CNPJ do Tenant</span>
+                    <!-- Atualizado para refletir o alias da query SQL -->
+                    <span class="info-value"><%= usuario.cnpj_tenant || 'N/A' %></span>
+                </div>
+
+                <div class="info-group">
+                    <span class="info-title">Data de Criação</span>
+                    <!-- Adicionada uma verificação simples caso created_at venha vazio -->
+                    <span class="info-value">
+                        <%= usuario.created_at ? new Date(usuario.created_at).toLocaleDateString('pt-PT') : '--' %>
+                    </span>
+                </div>
+
+                <div class="abelha-badge">
+                    Já é uma abelha há <strong>
+                        <%= usuario.created_at ? Math.floor((Date.now() - new Date(usuario.created_at)) / (1000 * 60 * 60 * 24)) : 0 %> dias!
+                    </strong>
+                </div>
+            </aside>
+
+            <!-- COLUNA DIREITA: Formulário de Edição -->
+            <section class="form-card">
+                <h3>Editar Informações</h3>
+
+                <!-- Avisos de Sucesso ou Erro vindos do Backend -->
+                <% if (typeof erro !== 'undefined' && erro) { %>
+                    <div class="feedback-msg erro"><%= erro %></div>
+                <% } %>
+                <% if (typeof sucesso !== 'undefined' && sucesso) { %>
+                    <div class="feedback-msg sucesso"><%= sucesso %></div>
+                <% } %>
+
+                <form action="/configuracoes-user/update" method="POST" class="form-config">
+                    
+                    <div class="form-group">
+                        <label for="nome">Nome do Usuário</label>
+                        <input type="text" id="nome" name="nome" value="<%= usuario.nome %>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <input type="email" id="email" name="email" value="<%= usuario.email %>" required>
+                    </div>
+
+                    <h4 class="subtitulo-form">Segurança</h4>
+                    <p class="dica-senha">Deixe em branco se não quiser alterar a senha.</p>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="senha">Nova Senha</label>
+                            <input type="password" id="senha" name="senha" placeholder="Digite a nova senha">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmar-senha">Confirmar Nova Senha</label>
+                            <input type="password" id="confirmar-senha" name="confirmar-senha" placeholder="Confirme a nova senha">
+                            <span id="mensagem-senha" class="mensagem-senha-valida"></span>
+                        </div>
+                    </div>
+
+                    <div class="botoes-acao">
+                        <button type="submit" class="btn-salvar" id="btn-salvar">Salvar Alterações</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Script para feedback visual das senhas em tempo real -->
+            <script>
+                const inputSenha = document.getElementById('senha');
+                const inputConfirmar = document.getElementById('confirmar-senha');
+                const btnSalvar = document.getElementById('btn-salvar');
+                const msgSenha = document.getElementById('mensagem-senha');
+
+                function validarSenhas() {
+                    // Se houver texto em qualquer um dos campos
+                    if (inputSenha.value || inputConfirmar.value) {
+                        if (inputSenha.value !== inputConfirmar.value) {
+                            inputConfirmar.classList.add('input-erro');
+                            inputConfirmar.classList.remove('input-sucesso');
+                            msgSenha.textContent = "As senhas não coincidem!";
+                            msgSenha.style.color = "#ef4444";
+                            btnSalvar.disabled = true;
+                            btnSalvar.style.opacity = '0.5';
+                            btnSalvar.style.cursor = 'not-allowed';
+                        } else {
+                            inputConfirmar.classList.remove('input-erro');
+                            inputConfirmar.classList.add('input-sucesso');
+                            msgSenha.textContent = "Senhas coincidem!";
+                            msgSenha.style.color = "#16a34a";
+                            btnSalvar.disabled = false;
+                            btnSalvar.style.opacity = '1';
+                            btnSalvar.style.cursor = 'pointer';
+                        }
+                    } else {
+                        // Se ambos estiverem vazios (só quer alterar nome/email)
+                        inputConfirmar.classList.remove('input-erro', 'input-sucesso');
+                        msgSenha.textContent = "";
+                        btnSalvar.disabled = false;
+                        btnSalvar.style.opacity = '1';
+                        btnSalvar.style.cursor = 'pointer';
+                    }
+                }
+
+                inputSenha.addEventListener('input', validarSenhas);
+                inputConfirmar.addEventListener('input', validarSenhas);
+            </script>
+
+        </div>
+    </main>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

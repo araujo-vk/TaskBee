@@ -23,8 +23,7 @@ module.exports = function (req, res, next) {
   const restricoes = {
     '/gestao-usuarios': [1, 2], // Apenas Admin (1) e Gestor (2)
     '/logs': [1, 2],            
-    '/relatorios': [1, 2, 3],   
-    '/configuracoes': [1]       
+    '/relatorios': [1, 2, 3],     
   };
 
   const usuario = req.session.usuarioLogado;

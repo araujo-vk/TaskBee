@@ -1,0 +1,270 @@
+/* public/css/configuracoes-user.css */
+
+/* --- ESTRUTURA PRINCIPAL --- */
+.conteudo-config {
+    width: 90%;
+    max-width: 1200px;
+    margin: 40px auto;
+}
+
+.cabecalho-config {
+    margin-bottom: 30px;
+}
+
+.cabecalho-config h2 {
+    color: var(--cor-preto);
+    font-size: 2rem;
+}
+
+/* Grid para separar o Perfil do Formulário */
+.config-grid {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+/* --- CARTÃO DE PERFIL (Esquerda) --- */
+.perfil-card {
+    background-color: var(--cor-branco);
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    border-top: 5px solid var(--cor-laranja);
+}
+
+.avatar-perfil {
+    font-size: 3rem;
+    background-color: #fff3e0;
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 15px auto;
+}
+
+.perfil-card h3 {
+    margin: 0 0 10px 0;
+    color: var(--cor-preto);
+    font-size: 1.4rem;
+}
+
+.tag-role {
+    display: inline-block;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 25px;
+}
+
+/* Cores dinâmicas para os níveis de acesso */
+.tag-role.admin { background-color: #fee2e2; color: #ef4444; }
+.tag-role.gestor { background-color: #e0f2fe; color: #0ea5e9; }
+.tag-role.tecnico { background-color: #fef3c7; color: #d97706; }
+.tag-role.user { background-color: #f1f5f9; color: #475569; }
+
+.divisor-perfil {
+    border: 0;
+    height: 1px;
+    background-color: #e2e8f0;
+    margin: 25px 0;
+}
+
+.info-group {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+.info-title {
+    font-size: 0.85rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    color: var(--cor-preto);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.abelha-badge {
+    margin-top: 30px;
+    background: linear-gradient(135deg, #fff9e6 0%, #fff0c2 100%);
+    color: #b45309;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    border: 1px dashed var(--cor-amarelo);
+}
+
+/* --- CARTÃO DE FORMULÁRIO (Direita) --- */
+.form-card {
+    background-color: var(--cor-branco);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.form-card h3 {
+    margin-top: 0;
+    margin-bottom: 30px;
+    color: var(--cor-preto);
+    font-size: 1.5rem;
+}
+
+.subtitulo-form {
+    margin: 30px 0 20px 0;
+    color: var(--cor-preto);
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 10px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group label {
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #334155;
+    font-size: 0.95rem;
+}
+
+.form-group input {
+    padding: 12px 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #333;
+    transition: all 0.3s ease;
+    background-color: #f8fafc;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--cor-laranja);
+    background-color: var(--cor-branco);
+    box-shadow: 0 0 0 3px rgba(232, 93, 4, 0.1);
+}
+
+.botoes-acao {
+    margin-top: 35px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-salvar {
+    background-color: var(--cor-laranja);
+    color: var(--cor-branco);
+    padding: 14px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(232, 93, 4, 0.3);
+    font-family: inherit;
+}
+
+.btn-salvar:hover {
+    background-color: #d15202;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(232, 93, 4, 0.4);
+}
+
+/* --- RESPONSIVIDADE (Telemóvel) --- */
+@media (max-width: 900px) {
+    .config-grid {
+        grid-template-columns: 1fr; /* Empilha as colunas */
+    }
+
+    .form-row {
+        grid-template-columns: 1fr; /* Inputs de senha empilhados */
+    }
+
+    .form-card {
+        padding: 25px;
+    }
+
+    .botoes-acao {
+        justify-content: center;
+    }
+
+    .btn-salvar {
+        width: 100%;
+    }
+}
+
+/* --- FEEDBACK DE MENSAGENS DO BACKEND --- */
+.feedback-msg {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.feedback-msg.erro {
+    background-color: #fef2f2;
+    color: #ef4444;
+    border: 1px solid #fca5a5;
+}
+
+.feedback-msg.sucesso {
+    background-color: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #86efac;
+}
+
+/* --- FEEDBACK VISUAL DAS SENHAS (TEMPO REAL) --- */
+.dica-senha {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-top: -15px;
+    margin-bottom: 20px;
+}
+
+.mensagem-senha-valida {
+    font-size: 0.85rem;
+    margin-top: 5px;
+    height: 15px;
+    display: block;
+}
+
+/* Classes injetadas pelo Javascript quando as senhas não batem */
+.form-group input.input-erro {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.form-group input.input-sucesso {
+    border-color: #16a34a !important;
+    background-color: #f0fdf4;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1) !important;
+}
+
+/* --- REFORÇO NA RESPONSIVIDADE JÁ EXISTENTE --- */
+@media (max-width: 900px) {
+    /* Garante que o grid de senhas fique um debaixo do outro no telemóvel */
+    .form-row {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+}

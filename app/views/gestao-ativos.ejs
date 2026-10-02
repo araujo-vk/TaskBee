@@ -1,1 +1,129 @@
-<p>gestão de ativos</p>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Ativos - TaskBee</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/gestao-ativos.css">
+    <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
+    <script>
+        const backendTheme = '<%= (locals.usuario && usuario.tema) ? usuario.tema : "" %>';
+        const localTheme = localStorage.getItem('tema');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        let themeToApply = 'light';
+        if (backendTheme && backendTheme !== 'system' && backendTheme !== '') {
+            themeToApply = backendTheme;
+        } else if (localTheme && localTheme !== 'system' && localTheme !== '') {
+            themeToApply = localTheme;
+        } else if (systemPrefersDark) {
+            themeToApply = 'dark';
+        }
+        
+        if (themeToApply === 'dark') {
+            document.documentElement.classList.add('dark-mode');
+        }
+    </script>
+</head>
+<body>
+    <%- include('partials/header') %>
+    
+    <main class="container-pagina">
+        <div class="cabecalho-pagina">
+            <h1>Gestão de Ativos de TI</h1>
+            <p class="subtitulo">Controle e inventário de equipamentos do seu tenant.</p>
+        </div>
+
+        <% if (typeof erro !== 'undefined' && erro) { %>
+            <div class="mensagem-alerta erro"><%= erro %></div>
+        <% } %>
+        <% if (typeof sucesso !== 'undefined' && sucesso) { %>
+            <div class="mensagem-alerta sucesso"><%= sucesso %></div>
+        <% } %>
+
+        <!-- Formulário de Cadastro de Ativo -->
+        <section class="secao-card">
+            <h2>Cadastrar Novo Ativo</h2>
+            <form action="/gestao-ativos/cadastrar" method="POST" class="form-grid">
+                <div class="form-group">
+                    <label for="nome">Nome do Ativo</label>
+                    <input type="text" id="nome" name="nome" placeholder="Ex: Notebook Dell Vostro" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoria">Categoria</label>
+                    <select id="categoria" name="categoria" required>
+                        <option value="computador">Computador / Notebook</option>
+                        <option value="servidor">Servidor</option>
+                        <option value="rede">Equipamento de Rede</option>
+                        <option value="periferico">Periférico</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status" name="status" required>
+                        <option value="ativo">Em Uso</option>
+                        <option value="manutencao">Em Manutenção</option>
+                        <option value="disponivel">Disponível</option>
+                        <option value="descartado">Descartado</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="numero_serie">Número de Série</label>
+                    <input type="text" id="numero_serie" name="numero_serie" placeholder="Ex: SN123456789">
+                </div>
+
+                <div class="form-acoes">
+                    <button type="submit" class="btn-primario">Salvar Ativo</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Tabela de Inventário -->
+        <section class="secao-card">
+            <h2>Ativos Registrados</h2>
+            <div class="tabela-container">
+                <table class="tabela-padrao">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Categoria</th>
+                            <th>Nº de Série</th>
+                            <th>Status</th>
+                            <th>Data de Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (ativos && ativos.length > 0) { %>
+                            <% ativos.forEach(ativo => { %>
+                                <tr>
+                                    <td><strong>#<%= ativo.id %></strong></td>
+                                    <td><%= ativo.name %></td>
+                                    <td class="coluna-capitalizada"><%= ativo.category %></td>
+                                    <td><code><%= ativo.serial_number || 'N/A' %></code></td>
+                                    <td>
+                                        <span class="tag-status ativo-<%= (ativo.status || '').toLowerCase() %>">
+                                            <%= ativo.status %>
+                                        </span>
+                                    </td>
+                                    <td><%= new Date(ativo.created_at).toLocaleDateString('pt-BR') %></td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="6" class="sem-dados">Nenhum ativo cadastrado até o momento.</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

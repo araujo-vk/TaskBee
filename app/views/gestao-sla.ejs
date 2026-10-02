@@ -1,1 +1,113 @@
-<p>gestão de sla</p>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de SLA - TaskBee</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/gestao-sla.css">
+    <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
+    <script>
+        const backendTheme = '<%= (locals.usuario && usuario.tema) ? usuario.tema : "" %>';
+        const localTheme = localStorage.getItem('tema');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        let themeToApply = 'light';
+        if (backendTheme && backendTheme !== 'system' && backendTheme !== '') {
+            themeToApply = backendTheme;
+        } else if (localTheme && localTheme !== 'system' && localTheme !== '') {
+            themeToApply = localTheme;
+        } else if (systemPrefersDark) {
+            themeToApply = 'dark';
+        }
+        
+        if (themeToApply === 'dark') {
+            document.documentElement.classList.add('dark-mode');
+        }
+    </script>
+</head>
+<body>
+    <%- include('partials/header') %>
+    
+    <main class="container-pagina">
+        <div class="cabecalho-pagina">
+            <h1>Configuração de SLA (Service Level Agreement)</h1>
+            <p class="subtitulo">Estipule limites de tempo para atendimento e resolução por prioridade.</p>
+        </div>
+
+        <% if (typeof erro !== 'undefined' && erro) { %>
+            <div class="mensagem-alerta erro"><%= erro %></div>
+        <% } %>
+        <% if (typeof sucesso !== 'undefined' && sucesso) { %>
+            <div class="mensagem-alerta sucesso"><%= sucesso %></div>
+        <% } %>
+
+        <!-- Formulário para Inserir/Editar Regras de SLA -->
+        <section class="secao-card">
+            <h2>Definir Prazos por Prioridade</h2>
+            <form action="/gestao-sla/salvar" method="POST" class="form-grid sla-grid">
+                <div class="form-group">
+                    <label for="prioridade">Nível de Prioridade</label>
+                    <select id="prioridade" name="prioridade" required>
+                        <option value="Baixa">Baixa</option>
+                        <option value="Média">Média</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Crítica">Crítica</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="tempo_resposta">Primeira Resposta (Horas)</label>
+                    <input type="number" id="tempo_resposta" name="tempo_resposta" min="1" required placeholder="Ex: 4">
+                </div>
+
+                <div class="form-group">
+                    <label for="tempo_resolucao">Solução Definitiva (Horas)</label>
+                    <input type="number" id="tempo_resolucao" name="tempo_resolucao" min="1" required placeholder="Ex: 24">
+                </div>
+
+                <div class="form-acoes">
+                    <button type="submit" class="btn-primario">Salvar Política de SLA</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Tabela das Políticas SLA Vigentes -->
+        <section class="secao-card">
+            <h2>Regras Vigentes</h2>
+            <div class="tabela-container">
+                <table class="tabela-padrao">
+                    <thead>
+                        <tr>
+                            <th>Prioridade</th>
+                            <th>Prazo de Resposta</th>
+                            <th>Prazo de Solução</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (politicasSla && politicasSla.length > 0) { %>
+                            <% politicasSla.forEach(regra => { %>
+                                <tr>
+                                    <td>
+                                        <span class="tag-prioridade prioridade-<%= (regra.priority_name || '').toLowerCase() %>">
+                                            <%= regra.priority_name %>
+                                        </span>
+                                    </td>
+                                    <td><strong><%= regra.response_time_hours %> h</strong></td>
+                                    <td><strong><%= regra.resolution_time_hours %> h</strong></td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="3" class="sem-dados">Nenhuma política de SLA cadastrada.</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

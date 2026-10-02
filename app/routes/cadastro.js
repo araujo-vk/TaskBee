@@ -1,4 +1,7 @@
+const bcrypt = require('bcrypt');
 const { registrarLog } = require('../../config/logger');
+
+const SALT_ROUNDS = 10;
 
 module.exports = function (app) {
   app.get("/cadastro", function (request, response) {
@@ -28,14 +31,17 @@ module.exports = function (app) {
       const tenantId = empresaEncontrada[0].id;
       const defaultRoleId = 4; // Solicitante / Usuário comum
 
-      // 2. Cadastra na tabela de pendentes usando o tenant_id encontrado
+      // 2. Gera o hash seguro da senha
+      const passwordHash = await bcrypt.hash(senha, SALT_ROUNDS);
+
+      // 3. Cadastra na tabela de pendentes com a senha criptografada
       const [resultPending] = await request.db.query(
         `INSERT INTO pending_users (tenant_id, name, email, password_hash, role_id, status) 
         VALUES (?, ?, ?, ?, ?, 'pendente')`,
-        [tenantId, nome, email, senha, defaultRoleId]
+        [tenantId, nome, email, passwordHash, defaultRoleId]
       );
 
-      // 3. Registo no Log de Auditoria (user_id vai null pois o utilizador ainda não existe)
+      // 4. Registo no Log de Auditoria
       await registrarLog(
         request.db, 
         tenantId, 
@@ -70,15 +76,18 @@ module.exports = function (app) {
 
       const newTenantId = resultTenant.insertId;
 
-      // 2. Cria automaticamente o primeiro Usuário Administrador dessa empresa
+      // 2. Gera o hash seguro da senha
+      const passwordHash = await bcrypt.hash(senha, SALT_ROUNDS);
+
+      // 3. Cria o primeiro Usuário Administrador com senha criptografada
       const adminRoleId = 1; // ID 1 = Admin
       const [resultUser] = await request.db.query(
         `INSERT INTO users (tenant_id, name, email, password_hash, role_id, is_active) 
         VALUES (?, ?, ?, ?, ?, TRUE)`,
-        [newTenantId, nome, email, senha, adminRoleId]
+        [newTenantId, nome, email, passwordHash, adminRoleId]
       );
 
-      // 3. Registo no Log de Auditoria
+      // 4. Registo no Log de Auditoria
       await registrarLog(
         request.db, 
         newTenantId, 

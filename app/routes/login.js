@@ -1,6 +1,7 @@
+const bcrypt = require('bcrypt');
+
 module.exports = function (app) {
   
-  // Apenas UMA rota GET
   app.get("/login", function (req, res) {
     res.render("login", { erro: null });
   });
@@ -23,8 +24,14 @@ module.exports = function (app) {
         [email, tenantId]
       );
 
-      // 3. Verifica se o usuário existe e se a senha bate
-      if (usuario.length === 0 || usuario[0].password_hash !== senha) {
+      if (usuario.length === 0) {
+        return res.render("login", { erro: "Email ou senha incorretos." });
+      }
+
+      // 3. Compara a senha digitada com o hash criptografado salvo no banco
+      const senhaValida = await bcrypt.compare(senha, usuario[0].password_hash);
+
+      if (!senhaValida) {
         return res.render("login", { erro: "Email ou senha incorretos." });
       }
 
@@ -37,7 +44,7 @@ module.exports = function (app) {
         tema: usuario[0].tema
       };
 
-      // 5. GARANTE que a sessão foi salva antes de mudar de página!
+      // 5. Garante que a sessão foi salva antes de redirecionar
       req.session.save((err) => {
         if (err) {
           console.error("Erro ao salvar sessão:", err);

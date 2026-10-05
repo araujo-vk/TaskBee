@@ -7,8 +7,9 @@
     <link rel="stylesheet" href="/css/global.css">
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const backendTheme = '<%= (locals.usuario && usuario.tema) ? usuario.tema : "" %>';
+        const backendTheme = '<%= (locals.usuario && locals.usuario.tema) ? locals.usuario.tema : "" %>';
         const localTheme = localStorage.getItem('tema');
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         
@@ -29,35 +30,99 @@
 <body>
     <%- include('partials/header') %>
     
+    <% 
+        const stats = locals.estatisticas || {};
+        const listaChamados = locals.ultimosChamados || [];
+        const filtro = locals.filtroAtivo || 'todos';
+
+        function formatarDataHora(dataValor) {
+            if (!dataValor) return 'N/A';
+            const dataObj = new Date(dataValor);
+            return isNaN(dataObj.getTime()) ? 'N/A' : dataObj.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+        }
+    %>
+
     <main class="container-pagina">
         <div class="cabecalho-pagina">
             <h1>Painel de Controle (Dashboard)</h1>
-            <p class="subtitulo">Acompanhe as métricas e os chamados mais recentes em tempo real.</p>
+            <p class="subtitulo">Acompanhe as métricas, prioridades e prazos de SLA em tempo real.</p>
         </div>
 
         <!-- Métricas Principais -->
         <section class="cards-metrica">
-            <div class="card-metrica total">
-                <span class="metrica-titulo">Total de Chamados</span>
-                <span class="metrica-valor"><%= estatisticas.total_chamados || 0 %></span>
-            </div>
-            <div class="card-metrica abertos">
-                <span class="metrica-titulo">Abertos</span>
-                <span class="metrica-valor"><%= estatisticas.chamados_abertos || 0 %></span>
-            </div>
-            <div class="card-metrica andamento">
-                <span class="metrica-titulo">Em Andamento</span>
-                <span class="metrica-valor"><%= estatisticas.chamados_andamento || 0 %></span>
-            </div>
-            <div class="card-metrica concluidos">
-                <span class="metrica-titulo">Concluídos</span>
-                <span class="metrica-valor"><%= estatisticas.chamados_concluidos || 0 %></span>
+            <a href="/dashboard?filtro=atrasados" class="card-link">
+                <div class="card-metrica atrasados destaque-alerta <%= filtro === 'atrasados' ? 'ativo' : '' %>">
+                    <div class="metrica-cabecalho">
+                        <span class="metrica-titulo">SLA Estourado (Atrasados)</span>
+                        <span class="badge-alerta-animada">Atenção</span>
+                    </div>
+                    <span class="metrica-valor"><%= stats.chamados_atrasados || 0 %></span>
+                </div>
+            </a>
+
+            <a href="/dashboard?filtro=urgentes" class="card-link">
+                <div class="card-metrica urgentes destaque-urgente <%= filtro === 'urgentes' ? 'ativo' : '' %>">
+                    <div class="metrica-cabecalho">
+                        <span class="metrica-titulo">Prioritários / Urgentes</span>
+                    </div>
+                    <span class="metrica-valor"><%= stats.chamados_urgentes || 0 %></span>
+                </div>
+            </a>
+
+            <a href="/dashboard?filtro=abertos" class="card-link">
+                <div class="card-metrica abertos <%= filtro === 'abertos' ? 'ativo' : '' %>">
+                    <span class="metrica-titulo">Abertos</span>
+                    <span class="metrica-valor"><%= stats.chamados_abertos || 0 %></span>
+                </div>
+            </a>
+
+            <a href="/dashboard?filtro=andamento" class="card-link">
+                <div class="card-metrica andamento <%= filtro === 'andamento' ? 'ativo' : '' %>">
+                    <span class="metrica-titulo">Em Andamento</span>
+                    <span class="metrica-valor"><%= stats.chamados_andamento || 0 %></span>
+                </div>
+            </a>
+
+            <a href="/dashboard?filtro=concluidos" class="card-link">
+                <div class="card-metrica concluidos <%= filtro === 'concluidos' ? 'ativo' : '' %>">
+                    <span class="metrica-titulo">Concluídos</span>
+                    <span class="metrica-valor"><%= stats.chamados_concluidos || 0 %></span>
+                </div>
+            </a>
+
+            <a href="/dashboard?filtro=todos" class="card-link">
+                <div class="card-metrica total <%= filtro === 'todos' ? 'ativo' : '' %>">
+                    <span class="metrica-titulo">Total Geral</span>
+                    <span class="metrica-valor"><%= stats.total_chamados || 0 %></span>
+                </div>
+            </a>
+        </section>
+
+        <!-- Seção do Gráfico de Insights -->
+        <section class="secao-graficos">
+            <div class="grafico-card">
+                <div class="grafico-header">
+                    <h2>Visão Geral da Operação</h2>
+                    <p>Distribuição de chamados por estado de atendimento e prioridade</p>
+                </div>
+                <div class="grafico-wrapper">
+                    <canvas id="graficoChamados"
+                        data-abertos="<%= stats.chamados_abertos || 0 %>"
+                        data-andamento="<%= stats.chamados_andamento || 0 %>"
+                        data-concluidos="<%= stats.chamados_concluidos || 0 %>"
+                        data-urgentes="<%= stats.chamados_urgentes || 0 %>"
+                        data-atrasados="<%= stats.chamados_atrasados || 0 %>">
+                    </canvas>
+                </div>
             </div>
         </section>
 
         <!-- Tabela de Chamados Recentes -->
         <section class="secao-card">
-            <h2>Últimos Chamados</h2>
+            <div class="secao-cabecalho">
+                <h2>Lista de Chamados <%= filtro !== 'todos' ? '(' + filtro.toUpperCase() + ')' : '' %></h2>
+            </div>
+            
             <div class="tabela-container">
                 <table class="tabela-padrao">
                     <thead>
@@ -67,30 +132,58 @@
                             <th>Status</th>
                             <th>Prioridade</th>
                             <th>Data de Criação</th>
+                            <th>Vencimento SLA</th>
+                            <th>Situação SLA</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <% if (ultimosChamados && ultimosChamados.length > 0) { %>
-                            <% ultimosChamados.forEach(chamado => { %>
-                                <tr>
+                        <% if (listaChamados && listaChamados.length > 0) { %>
+                            <% listaChamados.forEach(function(chamado) { %>
+                                <% 
+                                    const statusNome = (chamado.status || '').toLowerCase();
+                                    const prioridadeNome = (chamado.priority || '').toLowerCase();
+                                    const isUrgenteOuCritico = ['crítica', 'critica', 'alta'].includes(prioridadeNome);
+                                    const isFinalizado = ['resolvido', 'fechado', 'concluido', 'concluído'].includes(statusNome);
+                                %>
+                                <tr class="<%= chamado.is_atrasado ? 'linha-atrasada' : (isUrgenteOuCritico ? 'linha-prioritaria' : '') %>">
                                     <td><strong>#<%= chamado.id %></strong></td>
-                                    <td><%= chamado.title %></td>
+                                    <td class="coluna-titulo"><%= chamado.title || 'Sem título' %></td>
                                     <td>
-                                        <span class="tag-status status-<%= (chamado.status || '').toLowerCase().replace(' ', '-') %>">
-                                            <%= chamado.status %>
+                                        <span class="tag-status status-<%= statusNome.replace(/\s+/g, '-') %>">
+                                            <%= chamado.status || 'Indefinido' %>
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="tag-prioridade prioridade-<%= (chamado.priority || '').toLowerCase() %>">
-                                            <%= chamado.priority %>
+                                        <span class="tag-prioridade prioridade-<%= prioridadeNome.replace(/\s+/g, '-') %> <%= isUrgenteOuCritico ? 'prioridade-destaque' : '' %>">
+                                            <%= chamado.priority || 'Normal' %>
                                         </span>
                                     </td>
-                                    <td><%= new Date(chamado.created_at).toLocaleDateString('pt-BR') %></td>
+                                    <td><%= formatarDataHora(chamado.created_at) %></td>
+                                    <td>
+                                        <% if (chamado.resolution_due_at) { %>
+                                            <span class="<%= chamado.is_atrasado ? 'texto-vencido' : '' %>">
+                                                <%= formatarDataHora(chamado.resolution_due_at) %>
+                                            </span>
+                                        <% } else { %>
+                                            <span class="texto-suave">Sem SLA</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% if (isFinalizado) { %>
+                                            <span class="tag-sla concluido">Finalizado</span>
+                                        <% } else if (chamado.is_atrasado) { %>
+                                            <span class="tag-sla atrasado">Atrasado</span>
+                                        <% } else if (chamado.resolution_due_at) { %>
+                                            <span class="tag-sla no-prazo">No Prazo</span>
+                                        <% } else { %>
+                                            <span class="tag-sla n-a">N/A</span>
+                                        <% } %>
+                                    </td>
                                 </tr>
                             <% }); %>
                         <% } else { %>
                             <tr>
-                                <td colspan="5" class="sem-dados">Nenhum chamado encontrado.</td>
+                                <td colspan="7" class="sem-dados">Nenhum chamado encontrado para este filtro.</td>
                             </tr>
                         <% } %>
                     </tbody>
@@ -100,5 +193,57 @@
     </main>
 
     <%- include('partials/footer') %>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const canvas = document.getElementById('graficoChamados');
+            if (!canvas) return;
+            
+            const abertos = Number(canvas.dataset.abertos) || 0;
+            const andamento = Number(canvas.dataset.andamento) || 0;
+            const concluidos = Number(canvas.dataset.concluidos) || 0;
+            const urgentes = Number(canvas.dataset.urgentes) || 0;
+            const atrasados = Number(canvas.dataset.atrasados) || 0;
+
+            const ctx = canvas.getContext('2d');
+            const isDarkMode = document.documentElement.classList.contains('dark-mode');
+            const textColor = isDarkMode ? '#f8fafc' : '#1e293b';
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Abertos', 'Em Andamento', 'Concluídos', 'Urgentes/Prioritários', 'Atrasados (SLA)'],
+                    datasets: [{
+                        label: 'Quantidade',
+                        data: [abertos, andamento, concluidos, urgentes, atrasados],
+                        backgroundColor: [
+                            '#ef4444',
+                            '#3b82f6',
+                            '#10b981',
+                            '#f97316',
+                            '#dc2626'
+                        ],
+                        borderWidth: 2,
+                        borderColor: isDarkMode ? '#202024' : '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: textColor,
+                                font: { size: 12 },
+                                padding: 15
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        });
+    </script>
 </body>
 </html>

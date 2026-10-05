@@ -3,10 +3,31 @@
 main {
     background-color: var(--cor-laranja);
     width: 100%;
+    position: relative;
+    z-index: 1;
+    overflow: hidden; /* Evita que a imagem gere barras de rolagem indesejadas */
+}
+
+/* Pseudo-elemento para aplicar a logo centralizada, fixa e com filtro */
+main::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/TaskBee-Logo.png');
+    background-repeat: no-repeat;
+    background-position: center center; /* Centraliza a imagem no meio da seção */
+    background-size: 550px; /* Define o tamanho maior da imagem */
+    background-attachment: fixed; /* Mantém a imagem fixa enquanto a página rola */
+    opacity: 0.1; /* Controla a visibilidade no fundo laranja */
+    filter: grayscale(100%) brightness(0.4); /* Filtro aplicado exclusivamente à logo */
+    z-index: -1;
+    pointer-events: none;
 }
 
 .hero-wrapper {
-    background-color: var(--cor-laranja);
     width: 100%;
     padding: 40px 0 20px 0;
     margin: 0;
@@ -87,7 +108,6 @@ main {
 }
 
 .sobre-wrapper {
-    background-color: var(--cor-laranja);
     padding: 20px 0 60px 0;
     margin: 0;
     width: 100%;
@@ -163,4 +183,8 @@ main {
     .hero-imagem img { width: 250px; margin-top: 20px; }
     .sobre-wrapper { padding: 20px 0 40px 0; }
     .section-title { font-size: 2rem; }
+    
+    main::before {
+        background-size: 320px; /* Reduz a imagem no mobile */
+    }
 }

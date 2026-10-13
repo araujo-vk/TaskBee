@@ -2,18 +2,19 @@ module.exports = function (app) {
   app.get("/dashboard", async function (request, response) {
     try {
       const userId = request.session.usuarioLogado && request.session.usuarioLogado.id;
-      const tenantId = request.session.usuarioLogado && request.session.usuarioLogado.tenant_id;
+      // Correção: utilizar 'tenantId' conforme definido no fluxo de login.js
+      const tenantId = request.session.usuarioLogado && request.session.usuarioLogado.tenantId;
 
-      if (!userId) {
+      if (!userId || !tenantId) {
         return response.redirect("/login");
       }
 
       const filtro = request.query.filtro || "todos";
 
-      // 1. Consulta de estatísticas gerais baseada no nome do status/prioridade e SLA do tenant
+      // 1. Consulta de estatísticas gerais com contagem distinta e subconsulta de SLA isolada
       const [estatisticas] = await request.db.query(`
         SELECT 
-          COUNT(t.id) AS total_chamados,
+          COUNT(DISTINCT t.id) AS total_chamados,
           SUM(CASE WHEN LOWER(s.name) = 'aberto' THEN 1 ELSE 0 END) AS chamados_abertos,
           SUM(CASE WHEN LOWER(s.name) = 'em andamento' THEN 1 ELSE 0 END) AS chamados_andamento,
           SUM(CASE WHEN LOWER(s.name) IN ('resolvido', 'fechado', 'concluído', 'concluido') THEN 1 ELSE 0 END) AS chamados_concluidos,
@@ -22,11 +23,15 @@ module.exports = function (app) {
         FROM tickets t
         LEFT JOIN statuses s ON t.status_id = s.id
         LEFT JOIN priorities p ON t.priority_id = p.id
-        LEFT JOIN sla_tracking st ON st.ticket_id = t.id AND st.tenant_id = t.tenant_id
+        LEFT JOIN (
+            SELECT ticket_id, tenant_id, MIN(resolution_due_at) AS resolution_due_at
+            FROM sla_tracking
+            GROUP BY ticket_id, tenant_id
+        ) st ON st.ticket_id = t.id AND st.tenant_id = t.tenant_id
         WHERE t.tenant_id = ?
       `, [tenantId]);
 
-      // 2. Cláusula WHERE dinâmica de acordo com o filtro selecionado na interface
+      // 2. Cláusula WHERE dinâmica de acordo com o filtro selecionado
       let whereClause = "WHERE t.tenant_id = ?";
       const queryParams = [tenantId];
 
@@ -42,7 +47,7 @@ module.exports = function (app) {
         whereClause += " AND st.resolution_due_at < NOW() AND LOWER(s.name) NOT IN ('resolvido', 'fechado', 'concluído', 'concluido')";
       }
 
-      // 3. Consulta de chamados com horário de vencimento SLA e flag de atraso
+      // 3. Consulta de listagem de chamados para a tabela
       const [ultimosChamados] = await request.db.query(`
         SELECT 
           t.id, 
@@ -58,7 +63,11 @@ module.exports = function (app) {
         FROM tickets t
         LEFT JOIN statuses s ON t.status_id = s.id
         LEFT JOIN priorities p ON t.priority_id = p.id
-        LEFT JOIN sla_tracking st ON st.ticket_id = t.id AND st.tenant_id = t.tenant_id
+        LEFT JOIN (
+            SELECT ticket_id, tenant_id, MIN(resolution_due_at) AS resolution_due_at
+            FROM sla_tracking
+            GROUP BY ticket_id, tenant_id
+        ) st ON st.ticket_id = t.id AND st.tenant_id = t.tenant_id
         ${whereClause}
         ORDER BY t.created_at DESC
         LIMIT 15

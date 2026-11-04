@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre - TaskBee</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/sobre.css">
+    <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+    const backendTheme = '{{ usuario.tema }}';
+    const localTheme = localStorage.getItem('tema');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let themeToApply = 'light';
+    if (backendTheme && backendTheme !== 'undefined' && backendTheme !== '') {
+        themeToApply = backendTheme;
+    } else if (localTheme) {
+        themeToApply = localTheme;
+    } else if (systemPrefersDark) {
+        themeToApply = 'dark';
+    }
+    if (themeToApply === 'dark') {
+        document.documentElement.classList.add('dark-mode');
+    }
+</script>
+</head>
+<body>
+    <%- include('partials/header') %>
+        <div class="container">
+            <h1>Sobre o TaskBee</h1>
+            <p class="subtitle">A TaskBee é uma plataforma criada para a gestão de tarefas e projetos, em 
+                ambientes corporativos, grandes ou pequenos. Ela oferece uma interface simples e fácil de 
+                implementar quando se busca uma solução para organizar e acompanhar o progresso de tarefas, 
+                além de fornecer recusros para facilitar a análise dos dados para tomadas de decisão. 
+                <a href="/cadastro">Comece hoje mesmo!</a>
+            </p>
+
+            <div class="features">
+                <div class="feature">
+                    <h2>Gestão de Tarefas</h2>
+                    <p>Organize suas tarefas de forma eficiente, atribuindo prioridades, prazos e responsáveis.</p>
+                </div>
+                <div class="feature">
+                    <h2>Colaboração em Equipe</h2>
+                    <p>Trabalhe em conjunto com sua equipe, compartilhando informações e atualizações em tempo real.</p>
+                </div>
+                <div class="feature">
+                    <h2>Relatórios e Análises</h2>
+                    <p>Gere relatórios detalhados para acompanhar o desempenho da equipe e identificar áreas de melhoria.</p>
+                </div>
+                <div class="feature">
+                    <h2>Integração de IA</h2>
+                    <p>Utilize a inteligência artificial para automatizar tarefas e obter insights valiosos sobre o desempenho da sua equipe.</p>
+                </div>
+            </div>
+        </div>
+        <div class="projeto">
+            <h2>O Projeto</h2>
+            <p>O TaskBee nasceu como um Projeto de Conclusão de Curso, com orientação da Proative Technology e dos docentes
+                da ETEC Bartolomeu Bueno da Silva. Todas as funcionalidades foram desenvolvidas com o objetivo de demonstrar 
+                capacidades de desenvolvimento web, integração e aplicação de funcionalidades.
+            </p>
+            <h3>Equipe de Desenvolvimento</h3>
+            <div class="team">
+                <div class="team-member">
+                    <h4>Anna Alice Siqueira</h4>
+                    <p>Design, UI e UX</p>
+                </div>
+                <div class="team-member">
+                    <h4>Giovanni Obata</h4>
+                    <p>Segurança e Construção do Projeto</p>
+                </div>
+                <div class="team-member">
+                    <h4>Victor Araújo</h4>
+                    <p>Main Dev: Back-End e Banco</p>
+                </div>
+            </div>
+        </div>
+    <%- include('partials/footer') %>
+</body>
+</html>

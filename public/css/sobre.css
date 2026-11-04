@@ -1,0 +1,207 @@
+main, body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-site, #f8fafc);
+    color: var(--texto-principal, #1e293b);
+}
+
+/* Container Principal */
+.container {
+    max-width: 1200px;
+    margin: 40px auto 30px auto;
+    padding: 0 20px;
+}
+
+/* Cabeçalho da Página */
+.container h1 {
+    font-size: 2.2rem;
+    color: var(--texto-principal, #1e293b);
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.subtitle {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: var(--texto-secundario, #64748b);
+    max-width: 900px;
+    margin-bottom: 40px;
+}
+
+.subtitle a {
+    color: var(--cor-laranja, #ff9800);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.subtitle a:hover {
+    color: var(--cor-amarelo, #f5ab00);
+    text-decoration: underline;
+}
+
+/* Seção de Funcionalidades (Grid de Recursos) */
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    margin-bottom: 50px;
+}
+
+.feature {
+    background-color: var(--bg-cartao, #ffffff);
+    border: 1px solid var(--borda-elemento, #e2e8f0);
+    border-radius: 12px;
+    padding: 28px 24px;
+    border-top: 5px solid var(--cor-amarelo, #f5ab00);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.feature:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.feature h2 {
+    font-size: 1.3rem;
+    color: var(--texto-principal, #1e293b);
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+.feature p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--texto-secundario, #64748b);
+    margin: 0;
+    flex-grow: 1;
+}
+
+/* Seção O Projeto */
+.projeto {
+    max-width: 1200px;
+    margin: 0 auto 60px auto;
+    padding: 35px 20px;
+    background-color: var(--bg-cartao, #ffffff);
+    border: 1px solid var(--borda-elemento, #e2e8f0);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.projeto h2 {
+    font-size: 1.8rem;
+    color: var(--texto-principal, #1e293b);
+    margin-top: 0;
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--cor-laranja, #ff9800);
+    display: inline-block;
+    padding-bottom: 5px;
+}
+
+.projeto > p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--texto-secundario, #64748b);
+    margin-bottom: 35px;
+}
+
+.projeto h3 {
+    font-size: 1.4rem;
+    color: var(--texto-principal, #1e293b);
+    margin-bottom: 20px;
+}
+
+/* Equipe de Desenvolvimento */
+.team {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+.team-member {
+    background-color: var(--bg-site, #f8fafc);
+    border: 1px solid var(--borda-elemento, #e2e8f0);
+    border-radius: 10px;
+    padding: 20px;
+    border-left: 4px solid var(--cor-laranja, #ff9800);
+    transition: transform 0.2s ease;
+}
+
+.team-member:hover {
+    transform: translateX(4px);
+}
+
+.team-member h4 {
+    font-size: 1.1rem;
+    color: var(--texto-principal, #1e293b);
+    margin: 0 0 6px 0;
+    font-weight: 600;
+}
+
+.team-member p {
+    font-size: 0.9rem;
+    color: var(--texto-secundario, #64748b);
+    margin: 0;
+    font-weight: 500;
+}
+
+/* --- SUPORTE AO TEMA ESCURO (DARK MODE) --- */
+:root.dark-mode, body.dark-mode {
+    --bg-site: #121214;
+    --bg-cartao: #202024;
+    --texto-principal: #f8fafc;
+    --texto-secundario: #a1a1aa;
+    --borda-elemento: #3f3f46;
+}
+
+:root.dark-mode .projeto,
+body.dark-mode .projeto {
+    background-color: var(--bg-cartao);
+    border-color: var(--borda-elemento);
+}
+
+:root.dark-mode .team-member,
+body.dark-mode .team-member {
+    background-color: var(--bg-site);
+    border-color: var(--borda-elemento);
+}
+
+/* --- RESPONSIVIDADE MOBILE --- */
+@media (max-width: 768px) {
+    .container {
+        margin: 25px auto 20px auto;
+        padding: 0 16px;
+    }
+
+    .container h1 {
+        font-size: 1.8rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+        margin-bottom: 30px;
+    }
+
+    .features {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .projeto {
+        margin: 0 16px 40px 16px;
+        padding: 24px 18px;
+    }
+
+    .projeto h2 {
+        font-size: 1.5rem;
+    }
+
+    .team {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+}

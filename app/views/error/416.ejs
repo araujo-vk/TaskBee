@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erro 416 - TaskBee</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/error.css">
+    <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+    const backendTheme = '{{ usuario.tema }}';
+    const localTheme = localStorage.getItem('tema');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let themeToApply = 'light';
+    if (backendTheme && backendTheme !== 'undefined' && backendTheme !== '') {
+        themeToApply = backendTheme;
+    } else if (localTheme) {
+        themeToApply = localTheme;
+    } else if (systemPrefersDark) {
+        themeToApply = 'dark';
+    }
+    if (themeToApply === 'dark') {
+        document.documentElement.classList.add('dark-mode');
+    }
+</script>
+</head>
+<body>
+    <%- include('partials/header') %>
+    <div class="error-container">
+        <div class="error-card">
+            <h1 class="error-title">Erro 416 - Range Not Satisfiable</h1>
+            <p class="error-message">O intervalo solicitado não pode ser atendido.</p>
+            <img src="/images/416.png" alt="Erro 416" class="error-image">
+            <a href="/" class="error-link">Voltar para a página inicial</a>
+        </div>
+    </div>
+    <%- include('partials/footer') %>
+</body>
+</html>

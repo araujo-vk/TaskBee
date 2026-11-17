@@ -40,14 +40,7 @@ module.exports = function (req, res, next) {
 
     // Se o perfil do usuário não estiver na lista, bloqueia o acesso
     if (!perfisPermitidos.includes(userRole)) {
-      return res.status(403).send(`
-        <div style="max-width: 500px; margin: 50px auto; padding: 20px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 8px; font-family: sans-serif; text-align: center;">
-            <h2 style="margin-top: 0;">Acesso Negado</h2>
-            <p>O seu nível de permissão não permite aceder a esta página.</p>
-            <br>
-            <a href="/chamados" style="display: inline-block; padding: 10px 20px; background-color: #721c24; color: white; text-decoration: none; border-radius: 4px;">← Voltar ao Início</a>
-        </div>
-      `);
+      return res.status(403).res.redirect('/error/403');
     }
   }
 

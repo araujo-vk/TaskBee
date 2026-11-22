@@ -13,9 +13,10 @@ module.exports = function (app) {
     }
   });
   app.get("/", function (request, response) {
-    response.render("index");
+    response.redirect(request.session.usuarioLogado ? '/chamados' : '/login');
   });
   app.get("/index", function (request, response) {
+    response.set('X-Robots-Tag', 'noindex, nofollow');
     response.render("index");
   });
 };

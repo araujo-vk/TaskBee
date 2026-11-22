@@ -125,4 +125,6 @@ Usuários autenticados podem selecionar os temas desbloqueados em Configuraçõe
 
 As paletas ficam em `config/themes.js`: cada uma define fundo, superfície dos cards, navegação, três acentos, modo claro/escuro e textura. Os textos, links e estados de feedback são derivados dessas cores com contraste mínimo de 4,5:1 nos pares verificados pelo teste `test/themePalette.test.js`. Os IDs dos temas permanecem estáveis para preservar as preferências e os desbloqueios existentes.
 
+Os motivos de fundo são vetores definidos em `config/themePatterns.js`, coloridos automaticamente pela paleta. A propriedade `pattern` escolhe o desenho; os tokens `padrao-fundo` e `padrao-opacidade` controlam sua aplicação e intensidade. Os desenhos são estáticos e decorativos, com escala menor no celular.
+
 `public/css/global.css` define a base; `public/css/interface.css` concentra a identidade dos componentes e os ajustes responsivos. Os arquivos de cada página mantêm sua disposição específica. A troca de aparência é centralizada em `public/js/appearance.js`, com retorno ao tema anterior caso a gravação falhe e atualização dos gráficos do Dashboard. As fontes e cores da identidade padrão continuam baseadas em Lexend, amarelo e laranja.

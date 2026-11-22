@@ -8,16 +8,7 @@
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        (function () {
-            const backendTheme = '<%= (locals.usuario && usuario.tema) ? usuario.tema : "" %>';
-            const localTheme = localStorage.getItem('tema');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const theme = backendTheme && backendTheme !== 'system' ? backendTheme
-                : (localTheme && localTheme !== 'system' ? localTheme : (systemPrefersDark ? 'dark' : 'light'));
-            document.documentElement.classList.toggle('dark-mode', theme === 'dark');
-        })();
-    </script>
+    <%- include('partials/appearance') %>
 </head>
 <body>
     <%- include('partials/header') %>
@@ -68,12 +59,12 @@
         </form>
 
         <section class="cards-metrica" aria-label="Indicadores de chamados">
-            <a href="/dashboard?filtro=atrasados&<%= periodoQuery %>" class="card-link"><div class="card-metrica atrasados destaque-alerta <%= filtro === 'atrasados' ? 'ativo' : '' %>"><span class="metrica-titulo">SLA atrasado</span><span class="metrica-valor"><%= valorKpi(stats.chamados_atrasados) %></span></div></a>
-            <a href="/dashboard?filtro=urgentes&<%= periodoQuery %>" class="card-link"><div class="card-metrica urgentes destaque-urgente <%= filtro === 'urgentes' ? 'ativo' : '' %>"><span class="metrica-titulo">Urgentes</span><span class="metrica-valor"><%= valorKpi(stats.chamados_urgentes) %></span></div></a>
-            <a href="/dashboard?filtro=abertos&<%= periodoQuery %>" class="card-link"><div class="card-metrica abertos <%= filtro === 'abertos' ? 'ativo' : '' %>"><span class="metrica-titulo">Abertos</span><span class="metrica-valor"><%= valorKpi(stats.chamados_abertos) %></span></div></a>
-            <a href="/dashboard?filtro=andamento&<%= periodoQuery %>" class="card-link"><div class="card-metrica andamento <%= filtro === 'andamento' ? 'ativo' : '' %>"><span class="metrica-titulo">Em andamento</span><span class="metrica-valor"><%= valorKpi(stats.chamados_andamento) %></span></div></a>
-            <a href="/dashboard?filtro=concluidos&<%= periodoQuery %>" class="card-link"><div class="card-metrica concluidos <%= filtro === 'concluidos' ? 'ativo' : '' %>"><span class="metrica-titulo">Concluídos</span><span class="metrica-valor"><%= valorKpi(stats.chamados_concluidos) %></span></div></a>
-            <a href="/dashboard?filtro=todos&<%= periodoQuery %>" class="card-link"><div class="card-metrica total <%= filtro === 'todos' ? 'ativo' : '' %>"><span class="metrica-titulo">Total</span><span class="metrica-valor"><%= valorKpi(stats.total_chamados) %></span></div></a>
+            <a href="/chamados?dashboard=atrasados" class="card-link"><div class="card-metrica atrasados destaque-alerta"><span class="metrica-titulo">SLA atrasado</span><span class="metrica-valor"><%= valorKpi(stats.chamados_atrasados) %></span></div></a>
+            <a href="/chamados?visao=todos&dashboard=urgentes" class="card-link"><div class="card-metrica urgentes destaque-urgente"><span class="metrica-titulo">Urgentes</span><span class="metrica-valor"><%= valorKpi(stats.chamados_urgentes) %></span></div></a>
+            <a href="/chamados?dashboard=abertos" class="card-link"><div class="card-metrica abertos"><span class="metrica-titulo">Abertos</span><span class="metrica-valor"><%= valorKpi(stats.chamados_abertos) %></span></div></a>
+            <a href="/chamados?dashboard=andamento" class="card-link"><div class="card-metrica andamento"><span class="metrica-titulo">Em andamento</span><span class="metrica-valor"><%= valorKpi(stats.chamados_andamento) %></span></div></a>
+            <a href="/chamados?visao=fechados&dashboard=concluidos" class="card-link"><div class="card-metrica concluidos"><span class="metrica-titulo">Concluídos</span><span class="metrica-valor"><%= valorKpi(stats.chamados_concluidos) %></span></div></a>
+            <a href="/chamados?visao=todos" class="card-link"><div class="card-metrica total"><span class="metrica-titulo">Total</span><span class="metrica-valor"><%= valorKpi(stats.total_chamados) %></span></div></a>
         </section>
 
         <section class="cards-kpi" aria-label="Indicadores de desempenho">
@@ -121,22 +112,29 @@
     <%- include('partials/footer') %>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const dark = document.documentElement.classList.contains('dark-mode');
-            const textColor = dark ? '#f8fafc' : '#1e293b';
-            const gridColor = dark ? '#3f3f46' : '#e2e8f0';
-            const criarGrafico = (id, cor) => {
+            const charts=[];
+            function renderCharts() {
+            charts.splice(0).forEach(chart => chart.destroy());
+            const styles = getComputedStyle(document.documentElement);
+            const token = name => styles.getPropertyValue(name).trim();
+            const textColor = token('--texto-principal');
+            const gridColor = token('--borda-elemento');
+            const criarGrafico = (id, cor, tipo = 'bar') => {
                 const canvas = document.getElementById(id);
                 if (!canvas || !window.Chart) return;
                 const labels = JSON.parse(canvas.dataset.labels || '[]');
                 const valores = JSON.parse(canvas.dataset.values || '[]');
-                new Chart(canvas.getContext('2d'), {
-                    type: 'bar',
+                charts.push(new Chart(canvas.getContext('2d'), {
+                    type: tipo,
                     data: { labels, datasets: [{ data: valores, backgroundColor: cor, borderRadius: 6, maxBarThickness: 48 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor }, grid: { display: false } }, y: { beginAtZero: true, ticks: { color: textColor, precision: 0 }, grid: { color: gridColor } } } }
-                });
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: tipo !== 'bar', position: 'bottom', labels: { color: textColor } } }, scales: tipo === 'bar' ? { x: { ticks: { color: textColor }, grid: { display: false } }, y: { beginAtZero: true, ticks: { color: textColor, precision: 0 }, grid: { color: gridColor } } } : {} }
+                }));
             };
-            criarGrafico('graficoCategorias', '#f97316');
-            criarGrafico('graficoPrioridades', '#fadc21');
+            criarGrafico('graficoCategorias', token('--cor-link'));
+            criarGrafico('graficoPrioridades', [token('--cor-amarelo'),token('--cor-laranja'),token('--acento-terciario'),token('--estado-info'),token('--estado-sucesso')], 'doughnut');
+            }
+            renderCharts();
+            document.addEventListener('taskbee:themechange',renderCharts);
         });
     </script>
 </body>

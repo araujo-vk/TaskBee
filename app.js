@@ -1,5 +1,6 @@
 require('./config/env');
 var app = require('./config/express')();
+app.locals.themeCatalog = [...require('./config/themes').defaults, ...require('./config/themes').themes];
 const express = require('express');
 const db = require('./db');
 const bancoMiddleware = require('./config/bancoMiddleware');
@@ -44,6 +45,7 @@ app.use(protegerRequisicoes);
 // sessões antigas e contas que foram desativadas.
 app.use(bancoMiddleware);
 app.use(authMiddleware);
+app.use(require('./config/themeProgress'));
 
 // REMOVIDO: A linha require('./app/routes/index')(app); foi apagada 
 // para evitar que a rota index seja carregada duas vezes, já que o loop fará isso.

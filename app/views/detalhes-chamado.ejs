@@ -7,16 +7,7 @@
     <link rel="stylesheet" href="/css/global.css">
     <link rel="stylesheet" href="/css/detalhes-chamado.css">
     <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
-    <script>
-        (function () {
-            const backendTheme = '<%= (locals.usuario && usuario.tema) ? usuario.tema : "" %>';
-            const localTheme = localStorage.getItem('tema');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const theme = backendTheme && backendTheme !== 'system' ? backendTheme
-                : (localTheme && localTheme !== 'system' ? localTheme : (systemPrefersDark ? 'dark' : 'light'));
-            document.documentElement.classList.toggle('dark-mode', theme === 'dark');
-        })();
-    </script>
+    <%- include('partials/appearance') %>
 </head>
 <body>
     <%- include('partials/header') %>

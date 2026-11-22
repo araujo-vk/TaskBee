@@ -1,6 +1,7 @@
 // public/js/routes/configuracoes-user_6.js (ou o caminho equivalente no seu projeto)
 
 const bcrypt = require('bcrypt');
+const { themes, byId, unlock } = require('../../config/themes');
 
 module.exports = function (app) { 
   app.get("/configuracoes-user", async function (request, response) {
@@ -38,7 +39,12 @@ module.exports = function (app) {
       const erro = request.query.erro || null;
       const sucesso = request.query.sucesso || null;
       
-      response.render("configuracoes-user", { usuario, erro, sucesso });
+      const months = Math.max(0, (Date.now() - new Date(usuario.created_at).getTime()) / (86400000 * 30.4375));
+      for (const [threshold, id] of [[1,'age-1'],[3,'age-3'],[6,'age-6'],[12,'age-12'],[24,'age-24']]) {
+        if (months >= threshold) await unlock(request.db, request.session.usuarioLogado, id);
+      }
+      const [allOwned] = await request.db.query('SELECT theme_id FROM user_themes WHERE tenant_id = ? AND user_id = ?', [request.session.usuarioLogado.tenantId, userId]);
+      response.render("configuracoes-user", { usuario, erro, sucesso, themes, unlockedThemes: new Set(allOwned.map(row => row.theme_id)) });
 
     } catch (error) {
       console.error("Erro na consulta de usuário:", error);
@@ -99,8 +105,12 @@ module.exports = function (app) {
       const { tema } = request.body;
 
       // Valida os valores aceitos
-      if (!['light', 'dark', 'system'].includes(tema)) {
+      if (!['light', 'dark', 'system'].includes(tema) && !byId.has(tema)) {
         return response.status(400).json({ erro: "Tema inválido." });
+      }
+      if (byId.has(tema) && !['light','dark','system'].includes(tema)) {
+        const [owned] = await request.db.query('SELECT 1 FROM user_themes WHERE tenant_id = ? AND user_id = ? AND theme_id = ?', [request.session.usuarioLogado.tenantId,userId,tema]);
+        if (!owned.length) return response.status(403).json({ erro: 'Tema ainda não desbloqueado.' });
       }
 
       // Atualiza o banco de dados
@@ -119,5 +129,16 @@ module.exports = function (app) {
       console.error("Erro ao atualizar tema:", error);
       return response.status(500).json({ erro: "Erro ao salvar a preferência no servidor." });
     }
+  });
+  app.get('/api/avisos', async (request, response) => {
+    const user = request.session.usuarioLogado;
+    if (!user) return response.status(401).json({ erro: 'Login necessário.' });
+    try {
+      const [[unlocks], [notifications]] = await Promise.all([
+        request.db.query('SELECT theme_id, unlocked_at FROM user_themes WHERE tenant_id=? AND user_id=? AND unlocked_at > DATE_SUB(NOW(), INTERVAL 2 MINUTE) ORDER BY unlocked_at DESC LIMIT 10',[user.tenantId,user.id]),
+        request.db.query('SELECT id,title,message,link_url,created_at FROM notifications WHERE tenant_id=? AND user_id=? AND is_read=FALSE AND created_at > DATE_SUB(NOW(), INTERVAL 2 MINUTE) ORDER BY created_at DESC LIMIT 10',[user.tenantId,user.id])
+      ]);
+      return response.json({ themes: unlocks.filter(row => byId.has(row.theme_id)).map(row => ({ id: row.theme_id, name: byId.get(row.theme_id).name, at: row.unlocked_at })), notifications });
+    } catch (error) { console.error('Avisos:',error); return response.status(500).json({erro:'Avisos indisponíveis.'}); }
   });
 };

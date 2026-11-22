@@ -150,13 +150,7 @@ main, body {
 }
 
 /* --- SUPORTE AO TEMA ESCURO (DARK MODE) --- */
-:root.dark-mode, body.dark-mode {
-    --bg-site: #121214;
-    --bg-cartao: #202024;
-    --texto-principal: #f8fafc;
-    --texto-secundario: #a1a1aa;
-    --borda-elemento: #3f3f46;
-}
+/* Paletas de cor centralizadas em config/themes.js. */
 
 :root.dark-mode .projeto,
 body.dark-mode .projeto {

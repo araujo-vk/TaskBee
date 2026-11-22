@@ -1,19 +1,11 @@
 <!-- views/partials/header.ejs -->
 <link rel="stylesheet" href="/css/header.css">
-<script>
-    (function () {
-        const saved = '<%= (locals.usuarioLogado && locals.usuarioLogado.tema) ? locals.usuarioLogado.tema : "" %>';
-        const local = localStorage.getItem('tema') || 'system';
-        const choice = ['light', 'dark'].includes(saved) ? saved : local;
-        const dark = choice === 'dark' || (choice === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
-        document.documentElement.classList.toggle('dark-mode', dark);
-        document.documentElement.dataset.themeChoice = choice;
-    })();
-</script>
+<link rel="stylesheet" href="/css/interface.css">
+<a href="#conteudo-principal" class="skip-link">Pular para o conteúdo</a>
 
 <header class="site-header <%= locals.usuarioLogado ? 'site-header--app' : 'site-header--public' %>">
     <div class="logo">
-        <a href="/"><img src="/TaskBee-Logo.png" alt="TaskBee"></a>
+        <a href="/" aria-label="TaskBee — início"><img src="/TaskBee-Logo.png" alt=""><span class="brand-name">TaskBee</span></a>
     </div>
     
     <!-- Botão Hambúrguer (exibido apenas no mobile) -->
@@ -27,15 +19,18 @@
             <span class="saudacao">Olá, <%= locals.usuarioLogado.nome || locals.usuarioLogado.name %>!</span>
             <a href="/chamados">Meus Chamados</a>
             <a href="/chamados/novo">Novo Chamado</a>
+            <span class="nav-heading">Atendimento</span>
             <a href="/catalogo-servicos">Catálogo</a>
             <a href="/base-de-conhecimento">Conhecimento</a>
             <a href="/notificacoes">Notificações<% if (locals.notificacoesNaoLidas) { %> (<%= locals.notificacoesNaoLidas %>)<% } %></a>
+            <a href="/admin">Índice</a>
 
             <% if ([1, 2, 3].includes(roleId)) { %>
                 <a href="/dashboard">Dashboard</a>
             <% } %>
 
             <% if ([1, 2].includes(roleId)) { %>
+                <span class="nav-heading">Gestão da colmeia</span>
                 <a href="/gestao-usuarios">Gestão de Usuários</a>
                 <a href="/gestao-cadastros">Cadastros</a>
                 <a href="/gestao-sla">SLA</a>
@@ -47,6 +42,7 @@
             <% } %>
 
             <a href="/IA">AskBee</a>
+            <span class="nav-heading">Seu espaço</span>
             <a href="/configuracoes-user">Configurações</a>
             
             <form action="/logout" method="POST" class="form-logout">
@@ -62,6 +58,8 @@
             <button type="button" data-theme="dark" title="Modo escuro" aria-label="Ativar modo escuro">☾</button>
             <button type="button" data-theme="system" title="Usar preferência do dispositivo" aria-label="Usar preferência do dispositivo">Auto</button>
         </div>
+        <span class="theme-current" data-current-theme>Aparência</span>
+        <span class="theme-save-status" data-theme-feedback role="status"></span>
     </nav>
 </header>
 
@@ -69,41 +67,70 @@
     const csrfToken = '<%= locals.csrfToken || "" %>';
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const navLinks = document.getElementById('navLinks');
-    document.querySelectorAll('.nav-links a[href]').forEach(link => {
-        const target = link.getAttribute('href');
-        if (target !== '/' && (location.pathname === target || location.pathname.startsWith(target + '/'))) {
-            link.setAttribute('aria-current', 'page');
-        }
+    const currentLink = [...document.querySelectorAll('.nav-links a[href]')]
+        .filter(link => location.pathname === link.getAttribute('href') || location.pathname.startsWith(link.getAttribute('href') + '/'))
+        .sort((a,b) => b.getAttribute('href').length - a.getAttribute('href').length)[0];
+    currentLink?.setAttribute('aria-current', 'page');
+    const navIcons = {
+        '/chamados':'M5 4h14v16H5z M8 9h8 M8 13h5',
+        '/chamados/novo':'M12 5v14 M5 12h14',
+        '/catalogo-servicos':'M4 4h6v6H4z M14 4h6v6h-6z M4 14h6v6H4z M14 14h6v6h-6z',
+        '/base-de-conhecimento':'M12 5C8 3 5 3 3 4v15c3-1 6-1 9 1 3-2 6-2 9-1V4c-2-1-5-1-9 1v15',
+        '/notificacoes':'M5 17h14l-2-4V9a5 5 0 0 0-10 0v4z M10 21h4',
+        '/dashboard':'M4 20V10h4v10 M10 20V4h4v16 M16 20V7h4v13',
+        '/gestao-usuarios':'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M17 4a4 4 0 0 1 0 7 M20 21v-3a4 4 0 0 0-3-4',
+        '/gestao-cadastros':'M4 5h16v15H4z M8 3v4 M16 3v4 M4 10h16 M8 14h8',
+        '/gestao-sla':'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18 M12 7v5l3 2',
+        '/gestao-ativos':'M3 4h18v13H3z M8 21h8 M12 17v4',
+        '/logs':'M5 3h14v18H5z M8 7h8 M8 11h8 M8 15h5',
+        '/IA':'M5 7h14v13H5z M12 3v4 M8 11h1 M15 11h1 M9 16h6',
+        '/configuracoes-user':'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M12 2v3 M12 19v3 M2 12h3 M19 12h3 M5 5l2 2 M17 17l2 2 M5 19l2-2 M17 7l2-2',
+        '/admin':'M4 4h16v16H4z M9 4v16 M12 8h5 M12 12h5'
+    };
+    document.querySelectorAll('.nav-links > a').forEach(link => {
+        const pathData=navIcons[link.getAttribute('href')];
+        if (!pathData) return;
+        const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');
+        icon.setAttribute('viewBox','0 0 24 24'); icon.setAttribute('fill','none'); icon.setAttribute('stroke','currentColor'); icon.setAttribute('stroke-width','1.6'); icon.setAttribute('stroke-linecap','round'); icon.setAttribute('stroke-linejoin','round'); icon.setAttribute('aria-hidden','true');
+        const path=document.createElementNS('http://www.w3.org/2000/svg','path'); path.setAttribute('d',pathData); icon.append(path); link.prepend(icon);
     });
 
-    function syncThemeButtons() {
-        document.querySelectorAll('.theme-switch [data-theme]').forEach(button => {
-            button.setAttribute('aria-pressed', button.dataset.theme === document.documentElement.dataset.themeChoice);
-        });
+    <% if (locals.usuarioLogado) { %>
+    const toastBox = document.createElement('div');
+    toastBox.className = 'toast-stack';
+    toastBox.setAttribute('aria-live','polite');
+    document.body.appendChild(toastBox);
+    function showToast(title, message, href) {
+        const toast = document.createElement(href ? 'a' : 'div');
+        toast.className = 'taskbee-toast';
+        if (href && href.startsWith('/')) toast.href = href;
+        const strong = document.createElement('strong'); strong.textContent = title;
+        const small = document.createElement('span'); small.textContent = message;
+        toast.append(strong,small); toastBox.appendChild(toast);
+        setTimeout(() => toast.remove(), 5500);
     }
-    syncThemeButtons();
-    document.querySelectorAll('.theme-switch [data-theme]').forEach(button => {
-        button.addEventListener('click', async () => {
-            const theme = button.dataset.theme;
-            localStorage.setItem('tema', theme);
-            document.documentElement.dataset.themeChoice = theme;
-            document.documentElement.classList.toggle('dark-mode', theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches));
-            syncThemeButtons();
-            <% if (locals.usuarioLogado) { %>
-            try {
-                await fetch('/api/atualizar-tema', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrfToken },
-                    body: JSON.stringify({ tema: theme })
-                });
-            } catch (error) { console.error('Não foi possível salvar o tema.', error); }
-            <% } %>
-        });
-    });
-    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-        if (document.documentElement.dataset.themeChoice === 'system') {
-            document.documentElement.classList.toggle('dark-mode', event.matches);
-        }
+    async function pollNotices() {
+        try {
+            const result = await fetch('/api/avisos');
+            if (!result.ok) return;
+            const data = await result.json();
+            const seen = new Set(JSON.parse(sessionStorage.getItem('taskbee-seen-notices') || '[]'));
+            for (const theme of data.themes || []) {
+                const key = `theme:${theme.id}:${theme.at}`;
+                if (!seen.has(key)) { seen.add(key); showToast('Tema desbloqueado', theme.name, '/configuracoes-user'); }
+            }
+            for (const notice of data.notifications || []) {
+                const key = `notice:${notice.id}`;
+                if (!seen.has(key)) { seen.add(key); showToast(notice.title,notice.message,notice.link_url); }
+            }
+            sessionStorage.setItem('taskbee-seen-notices',JSON.stringify([...seen].slice(-100)));
+        } catch (error) { console.error('Avisos indisponíveis:',error); }
+    }
+    pollNotices(); setInterval(pollNotices, 30000);
+    <% } %>
+    document.addEventListener('DOMContentLoaded', () => {
+        const main = document.querySelector('main') || document.querySelector('body > .container');
+        if (main && !document.getElementById('conteudo-principal')) { main.id = 'conteudo-principal'; main.setAttribute('tabindex','-1'); }
     });
 
     hamburgerBtn.addEventListener('click', () => {

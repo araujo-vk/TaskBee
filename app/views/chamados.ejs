@@ -7,42 +7,14 @@
     <link rel="stylesheet" href="/css/global.css">
     <link rel="stylesheet" href="/css/chamados.css">
     <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
-    <script>
-        (function() {
-            // Usa 'locals.usuario' para evitar erros caso o usuário não esteja logado
-            const backendTheme = '<%= (locals.usuario && usuario.tema) ? usuario.tema : "" %>';
-            const localTheme = localStorage.getItem('tema');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            let themeToApply = 'light';
-            
-            // 1. Se houver preferência vinda do banco de dados (usuário logado)
-            if (backendTheme && backendTheme !== 'system' && backendTheme !== '') {
-                themeToApply = backendTheme;
-            } 
-            // 2. Se houver preferência no localStorage (visitante que já mudou o tema)
-            else if (localTheme && localTheme !== 'system' && localTheme !== '') {
-                themeToApply = localTheme;
-            } 
-            // 3. Senão, adota a preferência do sistema operacional/navegador
-            else if (systemPrefersDark) {
-                themeToApply = 'dark';
-            }
-            
-            // Aplica imediatamente na tag <html> para evitar a tela branca ao carregar
-            if (themeToApply === 'dark') {
-                document.documentElement.classList.add('dark-mode');
-            } else {
-                document.documentElement.classList.remove('dark-mode');
-            }
-        })();
-    </script>
+    <%- include('partials/appearance') %>
 </head>
 <body>
     <%- include('partials/header') %>
 
     <main id="conteudo-principal" class="conteudo-chamados">
         <div class="cabecalho-chamados">
+            <nav class="visoes-chamados" aria-label="Visualização de chamados"><a href="/chamados?visao=ativos" <%= filtros.visao === 'ativos' ? 'aria-current="page"' : '' %>>Em aberto</a><a href="/chamados?visao=fechados" <%= filtros.visao === 'fechados' ? 'aria-current="page"' : '' %>>Fechados</a><a href="/chamados?visao=todos" <%= filtros.visao === 'todos' ? 'aria-current="page"' : '' %>>Todos</a></nav>
             <h2>Lista de Chamados</h2>
             <div class="acoes-lista-chamados">
                 <% if (usuario && [1, 2, 3].includes(Number(usuario.roleId))) { %>
@@ -53,6 +25,7 @@
         </div>
 
         <form class="filtros-chamados" action="/chamados" method="GET">
+            <input type="hidden" name="visao" value="<%= filtros.visao %>"><input type="hidden" name="dashboard" value="<%= filtros.dashboard %>">
             <label>Buscar <input type="search" name="busca" value="<%= filtros.busca %>" placeholder="ID, título ou descrição"></label>
             <label>Status <select name="status_id"><option value="">Todos</option><% status.forEach(item => { %><option value="<%= item.id %>" <%= Number(filtros.statusId) === Number(item.id) ? 'selected' : '' %>><%= item.name %></option><% }) %></select></label>
             <label>Prioridade <select name="prioridade_id"><option value="">Todas</option><% prioridades.forEach(item => { %><option value="<%= item.id %>" <%= Number(filtros.prioridadeId) === Number(item.id) ? 'selected' : '' %>><%= item.name %></option><% }) %></select></label>

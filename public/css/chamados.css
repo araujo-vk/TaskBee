@@ -153,3 +153,6 @@
     .btn-exportar { flex: 1; text-align: center; }
     .filtros-chamados { grid-template-columns: 1fr; }
 }
+.visoes-chamados { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+.visoes-chamados a { padding:8px 12px; border-radius:8px; background:var(--bg-cartao); border:1px solid var(--borda-elemento); color:var(--texto-principal); text-decoration:none; }
+.visoes-chamados a[aria-current] { background:var(--cor-amarelo); color:#171717; font-weight:700; }

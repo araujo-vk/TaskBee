@@ -1,0 +1,10 @@
+<style id="taskbee-theme-tokens">
+<% themeCatalog.forEach(theme => { %>
+:root[data-theme="<%= theme.id %>"] {
+  color-scheme: <%= theme.mode %>;
+  <% Object.entries(theme.tokens).forEach(([key,value]) => { %>--<%= key %>:<%= value %>;<% }) %>
+}
+<% }) %>
+</style>
+<script id="taskbee-appearance" type="application/json"><%- JSON.stringify({ saved: locals.usuarioLogado?.tema || '', authenticated: !!locals.usuarioLogado, userId: locals.usuarioLogado?.id || 'guest', csrf: locals.csrfToken || '', themes: themeCatalog.map(({id,name,mode,pattern,accent,secondary,tertiary,bg,surface}) => ({id,name,mode,pattern,accent,secondary,tertiary,bg,surface})) }).replace(/</g,'\\u003c') %></script>
+<script src="/js/appearance.js"></script>

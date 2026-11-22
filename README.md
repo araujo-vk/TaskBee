@@ -95,8 +95,8 @@ npm install express-session
 
 3. **Configurar ambiente e Banco de Dados:**
 * Copie `.env.example` para `.env` e preencha `DB_USER`, `DB_PASSWORD`, `DB_NAME` e `SESSION_SECRET`.
-* Para um banco novo, execute `database/banco.sql`.
-* Para atualizar um banco que já existia antes da sessão persistente e dos anexos protegidos, execute uma única vez `database/migrations/001_core_hardening.sql`.
+* Execute `database/banco.sql` para criar ou reiniciar o banco de demonstração. O script apaga as tabelas existentes do TaskBee e recria a estrutura e os dados fictícios; faça backup antes se quiser conservar os seus dados de teste.
+* O script único já inclui sessões, anexos protegidos e temas; não há migrações separadas para a instalação de demonstração.
 * A pasta `storage/tickets` guarda anexos fora da área pública e precisa ter permissão de escrita.
 
 
@@ -117,3 +117,12 @@ npm test
 ```
 
 ---
+# Temas e personalização
+
+O script `database/banco.sql` cria `user_themes` e o campo ampliado `users.tema`.
+
+Usuários autenticados podem selecionar os temas desbloqueados em Configurações. A visita durante um mês sazonal desbloqueia o respectivo tema permanentemente. As conquistas são registradas ao concluir ações; `/admin` oferece o código de apresentação `TCC2026`, que libera os temas sazonais e de conquistas. Os dois temas secretos continuam ligados às rotas `/erro/777` e `/erro/418`. Os avisos de desbloqueio e notificações recentes aparecem brevemente na interface.
+
+As paletas ficam em `config/themes.js`: cada uma define fundo, superfície dos cards, navegação, três acentos, modo claro/escuro e textura. Os textos, links e estados de feedback são derivados dessas cores com contraste mínimo de 4,5:1 nos pares verificados pelo teste `test/themePalette.test.js`. Os IDs dos temas permanecem estáveis para preservar as preferências e os desbloqueios existentes.
+
+`public/css/global.css` define a base; `public/css/interface.css` concentra a identidade dos componentes e os ajustes responsivos. Os arquivos de cada página mantêm sua disposição específica. A troca de aparência é centralizada em `public/js/appearance.js`, com retorno ao tema anterior caso a gravação falhe e atualização dos gráficos do Dashboard. As fontes e cores da identidade padrão continuam baseadas em Lexend, amarelo e laranja.

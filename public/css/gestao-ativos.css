@@ -179,14 +179,7 @@ code {
 }
 
 /* MODO ESCURO */
-:root.dark-mode, body.dark-mode {
-    --bg-cartao: #202024;
-    --bg-site: #121214;
-    --bg-input: #121214;
-    --texto-principal: #f8fafc;
-    --texto-secundario: #a1a1aa;
-    --borda-elemento: #3f3f46;
-}
+/* Paletas de cor centralizadas em config/themes.js. */
 
 /* RESPONSIVIDADE MOBILE */
 @media (max-width: 768px) {

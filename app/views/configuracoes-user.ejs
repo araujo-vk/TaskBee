@@ -8,36 +8,7 @@
     <link rel="stylesheet" href="/css/configuracoes-user.css">
     <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
     
-    <script>
-        (function() {
-            // Usa 'locals.usuario' para evitar erros caso o usuário não esteja logado
-            const backendTheme = '<%= (locals.usuario && usuario.tema) ? usuario.tema : "" %>';
-            const localTheme = localStorage.getItem('tema');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            let themeToApply = 'light';
-            
-            // 1. Se houver preferência vinda do banco de dados (usuário logado)
-            if (backendTheme && backendTheme !== 'system' && backendTheme !== '') {
-                themeToApply = backendTheme;
-            } 
-            // 2. Se houver preferência no localStorage (visitante que já mudou o tema)
-            else if (localTheme && localTheme !== 'system' && localTheme !== '') {
-                themeToApply = localTheme;
-            } 
-            // 3. Senão, adota a preferência do sistema operacional/navegador
-            else if (systemPrefersDark) {
-                themeToApply = 'dark';
-            }
-            
-            // Aplica imediatamente na tag <html> para evitar a tela branca ao carregar
-            if (themeToApply === 'dark') {
-                document.documentElement.classList.add('dark-mode');
-            } else {
-                document.documentElement.classList.remove('dark-mode');
-            }
-        })();
-    </script>
+    <%- include('partials/appearance') %>
 </head>
 <body>
     <%- include('partials/header') %>
@@ -101,13 +72,26 @@
                 <% } %>
 
                 <!-- SEÇÃO DE PREFERÊNCIA DE TEMA DA INTERFACE -->
-                <div class="form-group" style="margin-bottom: 25px;">
+                <div class="appearance-panel">
                     <label for="seletor-tema">Aparência do Sistema</label>
-                    <select id="seletor-tema" class="select-config">
+                    <select id="seletor-tema" class="select-config" data-theme-select aria-describedby="appearance-feedback">
                         <option value="system">Padrão do Sistema (Automático)</option>
                         <option value="light">Modo Claro</option>
                         <option value="dark">Modo Escuro</option>
+                        <% for (const group of ['Sazonais','Conquistas','Easter eggs']) { %>
+                          <optgroup label="<%= group %>">
+                          <% themes.filter(theme => theme.group === group && unlockedThemes.has(theme.id)).forEach(theme => { %>
+                            <option value="<%= theme.id %>"><%= theme.name %></option>
+                          <% }) %>
+                          </optgroup>
+                        <% } %>
                     </select>
+                    <div class="theme-preview" aria-label="Paleta atual">
+                        <span class="preview-caption">Sua colmeia, do seu jeito</span>
+                        <strong data-current-theme>Aparência</strong>
+                        <div class="theme-swatches" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+                    </div>
+                    <p class="appearance-feedback" id="appearance-feedback" data-theme-feedback role="status"></p>
                 </div>
 
                 <hr style="border: 0; border-top: 1px solid var(--borda-elemento); margin-bottom: 20px;">
@@ -147,44 +131,6 @@
 
             <!-- Script de Validação de Senha e Troca de Tema -->
             <script>
-                // --- LÓGICA DO SELETOR DE TEMA ---
-                const seletorTema = document.getElementById('seletor-tema');
-                
-                // Define a opção selecionada no carregamento
-                const temaAtualBackend = '<%= usuario.tema %>';
-                seletorTema.value = temaAtualBackend || localStorage.getItem('tema') || 'system';
-
-                seletorTema.addEventListener('change', async (e) => {
-                    const novoTema = e.target.value;
-
-                    // 1. Aplica as mudanças no DOM imediatamente
-                    if (novoTema === 'dark') {
-                        document.documentElement.classList.add('dark-mode');
-                    } else if (novoTema === 'light') {
-                        document.documentElement.classList.remove('dark-mode');
-                    } else {
-                        // Se selecionou 'system', checa a preferência do SO/Navegador
-                        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                        document.documentElement.classList.toggle('dark-mode', systemPrefersDark);
-                    }
-
-                    // 2. Salva localmente
-                    localStorage.setItem('tema', novoTema);
-
-                    // 3. Atualiza no backend sem recarregar a página
-                    try {
-                        await fetch('/api/atualizar-tema', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ tema: novoTema })
-                        });
-                    } catch (error) {
-                        console.error('Erro ao salvar preferência no servidor:', error);
-                    }
-                });
-
                 // --- LÓGICA DE VALIDAÇÃO DE SENHAS ---
                 const inputSenha = document.getElementById('senha');
                 const inputConfirmar = document.getElementById('confirmar-senha');
@@ -197,7 +143,7 @@
                             inputConfirmar.classList.add('input-erro');
                             inputConfirmar.classList.remove('input-sucesso');
                             msgSenha.textContent = "As senhas não coincidem!";
-                            msgSenha.style.color = "#ef4444";
+                            msgSenha.style.color = "var(--estado-erro)";
                             btnSalvar.disabled = true;
                             btnSalvar.style.opacity = '0.5';
                             btnSalvar.style.cursor = 'not-allowed';
@@ -205,7 +151,7 @@
                             inputConfirmar.classList.remove('input-erro');
                             inputConfirmar.classList.add('input-sucesso');
                             msgSenha.textContent = "Senhas coincidem!";
-                            msgSenha.style.color = "#16a34a";
+                            msgSenha.style.color = "var(--estado-sucesso)";
                             btnSalvar.disabled = false;
                             btnSalvar.style.opacity = '1';
                             btnSalvar.style.cursor = 'pointer';

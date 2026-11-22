@@ -261,6 +261,8 @@ module.exports = function (app) {
     const colunaOrdenacao = colunasPermitidas[sort] || 't.created_at';
     const filtros = {
       busca: String(req.query.busca || '').trim().slice(0, 100),
+      visao: ['ativos','fechados','todos'].includes(req.query.visao) ? req.query.visao : 'ativos',
+      dashboard: ['abertos','andamento','concluidos','urgentes','atrasados'].includes(req.query.dashboard) ? req.query.dashboard : '',
       statusId: Number(req.query.status_id) || null,
       prioridadeId: Number(req.query.prioridade_id) || null,
       categoriaId: Number(req.query.categoria_id) || null
@@ -278,6 +280,16 @@ module.exports = function (app) {
       `;
       let condicoes = ' WHERE t.tenant_id = ? AND t.deleted_at IS NULL';
       const params = [usuario.tenantId];
+      const finalizadoSql = "LOWER(COALESCE(s.name,'')) IN ('resolvido','fechado','concluído','concluido')";
+      if (filtros.visao === 'ativos') condicoes += ` AND NOT (${finalizadoSql})`;
+      if (filtros.visao === 'fechados') condicoes += ` AND ${finalizadoSql}`;
+      if (filtros.dashboard === 'abertos') condicoes += " AND LOWER(s.name) = 'aberto'";
+      if (filtros.dashboard === 'andamento') condicoes += " AND LOWER(s.name) = 'em andamento'";
+      if (filtros.dashboard === 'concluidos') condicoes += " AND LOWER(s.name) IN ('resolvido','fechado','concluído','concluido')";
+      if (filtros.dashboard === 'urgentes') condicoes += " AND (p.weight >= 3 OR LOWER(p.name) IN ('crítica','critica','alta'))";
+      if (filtros.dashboard === 'atrasados') {
+        condicoes += ` AND NOT (${finalizadoSql}) AND EXISTS (SELECT 1 FROM sla_tracking st WHERE st.ticket_id=t.id AND st.tenant_id=t.tenant_id AND st.resolution_due_at < NOW())`;
+      }
 
       if (userRole === 4) {
         condicoes += ' AND t.requester_id = ?';
@@ -325,6 +337,8 @@ module.exports = function (app) {
       const totalPaginas = Math.max(Math.ceil(Number(contagem[0].total) / limite), 1);
       const queryBase = new URLSearchParams({
         busca: filtros.busca,
+        visao: filtros.visao,
+        dashboard: filtros.dashboard,
         status_id: filtros.statusId || '',
         prioridade_id: filtros.prioridadeId || '',
         categoria_id: filtros.categoriaId || ''

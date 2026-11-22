@@ -39,6 +39,28 @@
     transition: all 0.2s ease;
 }
 
+.acoes-lista-chamados {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.btn-exportar {
+    display: inline-block;
+    padding: 10px 14px;
+    border: 1px solid var(--borda-elemento);
+    border-radius: 8px;
+    color: var(--texto-principal);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.btn-exportar:hover {
+    border-color: var(--cor-laranja);
+    color: var(--cor-laranja);
+}
+
 .btn-novo-chamado:hover {
     background-color: var(--cor-laranja);
     color: #f8fafc;
@@ -118,4 +140,6 @@
         width: 100%;
         text-align: center;
     }
+    .acoes-lista-chamados { width: 100%; }
+    .btn-exportar { flex: 1; text-align: center; }
 }

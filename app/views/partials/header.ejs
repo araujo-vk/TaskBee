@@ -7,7 +7,7 @@
     </div>
     
     <!-- Botão Hambúrguer (exibido apenas no mobile) -->
-    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir Menu">
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menu" aria-controls="navLinks" aria-expanded="false">
         ☰
     </button>
     
@@ -49,5 +49,14 @@
 
     hamburgerBtn.addEventListener('click', () => {
         navLinks.classList.toggle('ativo');
+        hamburgerBtn.setAttribute('aria-expanded', navLinks.classList.contains('ativo'));
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && navLinks.classList.contains('ativo')) {
+            navLinks.classList.remove('ativo');
+            hamburgerBtn.setAttribute('aria-expanded', 'false');
+            hamburgerBtn.focus();
+        }
     });
 </script>

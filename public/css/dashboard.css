@@ -10,6 +10,56 @@
     margin-bottom: 25px;
 }
 
+.cabecalho-dashboard {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.acoes-dashboard {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.btn-secundario-dashboard {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid var(--borda-elemento);
+    border-radius: 8px;
+    color: var(--texto-principal);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.btn-secundario-dashboard:hover {
+    border-color: var(--cor-laranja);
+    color: var(--cor-laranja);
+}
+
+.filtro-periodo {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    color: var(--texto-secundario);
+    font-size: 0.9rem;
+}
+
+.filtro-periodo select {
+    min-height: 38px;
+    padding: 6px 10px;
+    border: 1px solid var(--borda-elemento);
+    border-radius: 7px;
+    background: var(--bg-cartao);
+    color: var(--texto-principal);
+}
+
 .cabecalho-pagina h1 {
     font-size: 1.8rem;
     color: var(--texto-principal, #1e293b);
@@ -117,8 +167,38 @@
     color: var(--texto-principal, #0f172a);
 }
 
+.cards-kpi {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin: -12px 0 30px;
+}
+
+.kpi-card {
+    padding: 16px 18px;
+    border: 1px solid var(--borda-elemento);
+    border-radius: 10px;
+    background: var(--bg-cartao);
+}
+
+.kpi-card span {
+    display: block;
+    color: var(--texto-secundario);
+    font-size: 0.8rem;
+}
+
+.kpi-card strong {
+    display: block;
+    margin-top: 7px;
+    color: var(--texto-principal);
+    font-size: 1.35rem;
+}
+
 /* SEÇÃO DO GRÁFICO */
 .secao-graficos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
     margin-bottom: 30px;
 }
 
@@ -266,6 +346,15 @@
     .cards-metrica {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
+    }
+
+    .cabecalho-dashboard {
+        flex-direction: column;
+    }
+
+    .cards-kpi,
+    .secao-graficos {
+        grid-template-columns: 1fr;
     }
 
     .card-metrica {

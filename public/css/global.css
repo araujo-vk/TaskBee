@@ -48,6 +48,38 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    line-height: 1.5;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid var(--cor-amarelo);
+    outline-offset: 3px;
+}
+
+button:not(:disabled),
+input[type="submit"],
+input[type="button"] {
+    cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+    }
 }
 
 .tabela-container {

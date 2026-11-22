@@ -18,6 +18,23 @@
     margin-bottom: 20px;
 }
 
+.cabecalho-detalhes h1,
+.titulo-secao {
+    margin: 0;
+    color: var(--texto-principal);
+}
+
+.titulo-secao {
+    margin: 0 0 12px;
+    font-size: 1rem;
+}
+
+.texto-secundario,
+.vazio {
+    color: var(--texto-secundario);
+    font-size: .88rem;
+}
+
 .badge-status {
     background-color: var(--cor-amarelo);
     color: #0a0a0a;
@@ -27,8 +44,24 @@
     font-size: 14px;
 }
 
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 24px;
+}
+
 .info-grid p {
     margin: 8px 0;
+    overflow-wrap: anywhere;
+}
+
+.painel-sla,
+.secao-detalhe {
+    margin: 24px 0;
+    padding: 20px;
+    border: 1px solid var(--borda-elemento);
+    border-radius: 10px;
+    background: var(--bg-cartao);
 }
 
 .descricao-box {
@@ -45,6 +78,108 @@
     border-radius: 8px;
     margin-bottom: 25px;
 }
+
+.acoes-chamado {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+}
+
+.acoes-chamado form,
+.form-comentario {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.acoes-chamado form {
+    padding: 16px;
+    border-radius: 9px;
+    background: rgba(249, 115, 22, .08);
+}
+
+.acoes-chamado label,
+.form-comentario label {
+    color: var(--texto-principal);
+    font-size: .9rem;
+    font-weight: 700;
+}
+
+.acoes-chamado select,
+.form-comentario textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--borda-elemento);
+    border-radius: 7px;
+    background: var(--bg-input);
+    color: var(--texto-principal);
+    font: inherit;
+}
+
+.acoes-chamado button,
+.form-comentario button {
+    align-self: flex-start;
+    padding: 9px 14px;
+    border: 0;
+    border-radius: 7px;
+    background: var(--cor-laranja);
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.lista-comentarios {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.comentario {
+    padding: 14px;
+    border-left: 3px solid var(--cor-amarelo);
+    border-radius: 0 8px 8px 0;
+    background: var(--bg-input);
+}
+
+.comentario.interno {
+    border-left-color: var(--cor-laranja);
+}
+
+.comentario header {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: var(--texto-secundario);
+    font-size: .78rem;
+}
+
+.comentario header strong { color: var(--texto-principal); }
+.comentario header em { color: var(--cor-laranja); font-style: normal; font-weight: 700; }
+.comentario p { margin: 9px 0 0; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.checkbox-interno { font-weight: 500 !important; }
+.checkbox-interno input { accent-color: var(--cor-laranja); }
+
+.linha-tempo,
+.lista-anexos {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding-left: 22px;
+}
+
+.linha-tempo li,
+.lista-anexos li {
+    color: var(--texto-secundario);
+    line-height: 1.5;
+}
+
+.linha-tempo strong,
+.lista-anexos strong { color: var(--texto-principal); }
+.linha-tempo time,
+.lista-anexos span { display: block; margin-top: 3px; font-size: .8rem; }
 
 .alterar-status form {
     display: flex;
@@ -77,5 +212,8 @@
 }
 
 @media (max-width: 600px) {
-    .alterar-status form { flex-direction: column; }
+    .alterar-status form,
+    .acoes-chamado { flex-direction: column; grid-template-columns: 1fr; }
+    .info-grid { grid-template-columns: 1fr; }
+    .cabecalho-detalhes { align-items: flex-start; flex-direction: column; }
 }

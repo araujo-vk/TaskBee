@@ -36,6 +36,22 @@ async function carregarOpcoesChamado(db, tenantId) {
   };
 }
 
+async function buscarTicketAcessivel(db, ticketId, usuario) {
+  let consulta = `
+    SELECT id, requester_id, assigned_to, title, status_id
+    FROM tickets
+    WHERE id = ? AND tenant_id = ?`;
+  const parametros = [ticketId, usuario.tenantId];
+
+  if (Number(usuario.roleId) === 4) {
+    consulta += ' AND requester_id = ?';
+    parametros.push(usuario.id);
+  }
+
+  const [tickets] = await db.query(consulta, parametros);
+  return tickets[0] || null;
+}
+
 module.exports = function (app) {
 
   // 1. Exibir formulário de novo chamado
@@ -129,6 +145,12 @@ module.exports = function (app) {
         );
 
         resultado = ticket;
+
+        await conexao.query(
+          `INSERT INTO ticket_history (tenant_id, ticket_id, field_changed, old_value, new_value, changed_by)
+           VALUES (?, ?, 'status', ?, ?, ?)`,
+          [usuario.tenantId, resultado.insertId, '—', statusAberto[0].name, usuario.id]
+        );
 
         let [politicas] = await conexao.query(
           `SELECT id, response_time_minutes, resolution_time_minutes
@@ -314,22 +336,155 @@ module.exports = function (app) {
         return res.redirect('/erro/404');
       }
 
-      const [status] = await req.db.query(
-        `SELECT id, name
-         FROM statuses
-         WHERE tenant_id = ?
-         ORDER BY id ASC`,
-        [usuario.tenantId]
-      );
+      const consultasComplementares = [
+        req.db.query(
+          `SELECT id, name
+           FROM statuses
+           WHERE tenant_id = ?
+           ORDER BY id ASC`,
+          [usuario.tenantId]
+        ),
+        req.db.query(
+          `SELECT tc.id, tc.comment, tc.is_internal, tc.created_at, u.name AS autor
+           FROM ticket_comments tc
+           INNER JOIN users u ON u.id = tc.user_id AND u.tenant_id = tc.tenant_id
+           WHERE tc.ticket_id = ? AND tc.tenant_id = ?${userRole === 4 ? ' AND tc.is_internal = FALSE' : ''}
+           ORDER BY tc.created_at ASC`,
+          [chamadoId, usuario.tenantId]
+        ),
+        req.db.query(
+          `SELECT th.id, th.field_changed, th.old_value, th.new_value, th.changed_at, u.name AS autor
+           FROM ticket_history th
+           LEFT JOIN users u ON u.id = th.changed_by AND u.tenant_id = th.tenant_id
+           WHERE th.ticket_id = ? AND th.tenant_id = ?${userRole === 4 ? " AND th.field_changed = 'status'" : ''}
+           ORDER BY th.changed_at DESC`,
+          [chamadoId, usuario.tenantId]
+        ),
+        req.db.query(
+          `SELECT ta.id, ta.file_path, ta.uploaded_at, u.name AS enviado_por
+           FROM ticket_attachments ta
+           LEFT JOIN users u ON u.id = ta.uploaded_by AND u.tenant_id = ta.tenant_id
+           WHERE ta.ticket_id = ? AND ta.tenant_id = ?
+           ORDER BY ta.uploaded_at DESC`,
+          [chamadoId, usuario.tenantId]
+        )
+      ];
 
-      res.render('detalhes-chamado', { chamado: resultados[0], status });
+      if (possuiPerfil(usuario, 1, 2, 3)) {
+        consultasComplementares.push(req.db.query(
+          `SELECT id, name
+           FROM users
+           WHERE tenant_id = ? AND is_active = TRUE AND role_id IN (1, 2, 3)
+           ORDER BY name ASC`,
+          [usuario.tenantId]
+        ));
+      }
+
+      const resultadosComplementares = await Promise.all(consultasComplementares);
+      const [status] = resultadosComplementares[0];
+      const [comentarios] = resultadosComplementares[1];
+      const [historico] = resultadosComplementares[2];
+      const [anexos] = resultadosComplementares[3];
+      const tecnicos = resultadosComplementares[4] ? resultadosComplementares[4][0] : [];
+
+      res.render('detalhes-chamado', {
+        chamado: resultados[0],
+        status,
+        comentarios,
+        historico,
+        anexos,
+        tecnicos
+      });
     } catch (error) {
       console.error('Erro ao carregar detalhes:', error);
       res.status(500).send('Erro interno do servidor');
     }
   });
 
-  // 5. Atualizar o estado do chamado (para Técnicos/Gestores)
+  // 5. Registrar comentário público ou interno no chamado
+  app.post('/chamados/:id/comentarios', async (req, res) => {
+    const usuario = req.session.usuarioLogado;
+    const chamadoId = Number(req.params.id);
+    const comentario = String(req.body.comentario || '').trim();
+
+    if (!usuario) return res.redirect('/login');
+    if (!Number.isInteger(chamadoId) || !comentario || comentario.length > 4000) {
+      return res.status(400).send('Comentário inválido. Use até 4.000 caracteres.');
+    }
+
+    try {
+      const ticket = await buscarTicketAcessivel(req.db, chamadoId, usuario);
+      if (!ticket) return res.redirect('/erro/404');
+
+      const interno = possuiPerfil(usuario, 1, 2, 3) && req.body.interno === '1';
+      await req.db.query(`
+        INSERT INTO ticket_comments (tenant_id, ticket_id, user_id, comment, is_internal)
+        VALUES (?, ?, ?, ?, ?)
+      `, [usuario.tenantId, chamadoId, usuario.id, comentario, interno]);
+
+      return res.redirect(`/chamados/${chamadoId}#comentarios`);
+    } catch (error) {
+      console.error('Erro ao registrar comentário:', error);
+      return res.status(500).send('Não foi possível registrar o comentário.');
+    }
+  });
+
+  // 6. Atribuir ou remover o responsável técnico
+  app.post('/chamados/:id/responsavel', async (req, res) => {
+    const usuario = req.session.usuarioLogado;
+    const chamadoId = Number(req.params.id);
+    const tecnicoId = req.body.tecnico_id ? Number(req.body.tecnico_id) : null;
+
+    if (!usuario) return res.redirect('/login');
+    if (!possuiPerfil(usuario, 1, 2, 3)) return res.redirect('/erro/403');
+    if (!Number.isInteger(chamadoId) || (tecnicoId !== null && !Number.isInteger(tecnicoId))) {
+      return res.status(400).send('Responsável inválido.');
+    }
+
+    try {
+      const [tickets] = await req.db.query(`
+        SELECT t.id, t.assigned_to, atual.name AS responsavel_atual
+        FROM tickets t
+        LEFT JOIN users atual ON atual.id = t.assigned_to AND atual.tenant_id = t.tenant_id
+        WHERE t.id = ? AND t.tenant_id = ?
+      `, [chamadoId, usuario.tenantId]);
+      if (!tickets.length) return res.redirect('/erro/404');
+
+      let novoResponsavel = null;
+      if (tecnicoId !== null) {
+        const [tecnicos] = await req.db.query(`
+          SELECT id, name
+          FROM users
+          WHERE id = ? AND tenant_id = ? AND is_active = TRUE AND role_id IN (1, 2, 3)
+        `, [tecnicoId, usuario.tenantId]);
+        if (!tecnicos.length) return res.status(400).send('Responsável inválido para esta empresa.');
+        novoResponsavel = tecnicos[0];
+      }
+
+      await req.db.query(
+        'UPDATE tickets SET assigned_to = ? WHERE id = ? AND tenant_id = ?',
+        [novoResponsavel ? novoResponsavel.id : null, chamadoId, usuario.tenantId]
+      );
+      await req.db.query(`
+        INSERT INTO ticket_history (tenant_id, ticket_id, field_changed, old_value, new_value, changed_by)
+        VALUES (?, ?, 'responsavel', ?, ?, ?)
+      `, [
+        usuario.tenantId,
+        chamadoId,
+        tickets[0].responsavel_atual || 'Não atribuído',
+        novoResponsavel ? novoResponsavel.name : 'Não atribuído',
+        usuario.id
+      ]);
+      await registrarLog(req.db, usuario.tenantId, usuario.id, 'Atualizar', 'Chamado', chamadoId, 'Responsável do chamado atualizado.');
+
+      return res.redirect(`/chamados/${chamadoId}`);
+    } catch (error) {
+      console.error('Erro ao atribuir responsável:', error);
+      return res.status(500).send('Não foi possível atualizar o responsável.');
+    }
+  });
+
+  // 7. Atualizar o estado do chamado (para Técnicos/Gestores)
   app.post('/chamados/:id/status', async (req, res) => {
     const usuario = req.session.usuarioLogado;
     const chamadoId = req.params.id;
@@ -350,7 +505,10 @@ module.exports = function (app) {
     try {
       // Busca dados do ticket para identificar o solicitante e título
       const [ticketInfo] = await req.db.query(
-        `SELECT requester_id, title, status_id FROM tickets WHERE id = ? AND tenant_id = ?`,
+        `SELECT t.requester_id, t.title, t.status_id, s.name AS status_atual
+         FROM tickets t
+         LEFT JOIN statuses s ON s.id = t.status_id AND s.tenant_id = t.tenant_id
+         WHERE t.id = ? AND t.tenant_id = ?`,
         [chamadoId, usuario.tenantId]
       );
 
@@ -377,6 +535,17 @@ module.exports = function (app) {
          WHERE id = ? AND tenant_id = ?`,
         [statusId, resolvido ? 1 : 0, chamadoId, usuario.tenantId]
       );
+
+      await req.db.query(`
+        INSERT INTO ticket_history (tenant_id, ticket_id, field_changed, old_value, new_value, changed_by)
+        VALUES (?, ?, 'status', ?, ?, ?)
+      `, [
+        usuario.tenantId,
+        chamadoId,
+        ticketInfo[0].status_atual || `Status #${ticketInfo[0].status_id}`,
+        statusValido[0].name,
+        usuario.id
+      ]);
 
       if (emAtendimento) {
         await req.db.query(
@@ -412,7 +581,7 @@ module.exports = function (app) {
         const requesterId = ticketInfo[0].requester_id;
         const tituloTicket = ticketInfo[0].title;
 
-        // ID 3 = Resolvido na tabela statuses
+        // A notificação acompanha o nome configurado para o status do tenant.
         if (resolvido) {
           await enviarNotificacao(
             req.db,

@@ -85,11 +85,11 @@
 
         <hr>
 
-        <a href="/gestao-usuarios/deletar/<%= usuario.id %>" 
-           onclick="return confirm('Tem certeza que deseja deletar este usuário? Esta ação não pode ser desfeita.');" 
-           class="btn-deletar">
-            Deletar Usuário
-        </a>
+        <% if (locals.usuario && Number(locals.usuario.roleId) === 1 && Number(locals.usuario.id) !== Number(usuario.id)) { %>
+            <form action="/gestao-usuarios/desativar/<%= usuario.id %>" method="POST" onsubmit="return confirm('Deseja desativar esta conta? O usuário não conseguirá entrar até ser reativado.');">
+                <button type="submit" class="btn-deletar">Desativar usuário</button>
+            </form>
+        <% } %>
     </main>
 
     <%- include('partials/footer') %>

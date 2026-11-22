@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // 1. Middlewares de requisição
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.json());
 
 // 2. SESSÃO VEM ANTES DA AUTENTICAÇÃO!

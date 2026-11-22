@@ -42,11 +42,43 @@
 <body>
     <%- include('partials/header') %>
 
-    <main class="conteudo-chamados">
+    <main id="conteudo-principal" class="conteudo-chamados">
         <div class="cabecalho-chamados">
-            <h2>Gestão de Usuários</h2>
-            <span class="badge-tenant">Tenant ID: <strong><%= tenantId %></strong></span>
+            <div>
+                <h2>Gestão de Usuários</h2>
+                <span class="badge-tenant">Empresa #<strong><%= tenantId %></strong></span>
+            </div>
         </div>
+
+        <% if (sucesso) { %><p class="mensagem-feedback sucesso" role="status"><%= sucesso %></p><% } %>
+        <% if (erro) { %><p class="mensagem-feedback erro" role="alert"><%= erro %></p><% } %>
+
+        <section class="importacao-exportacao" aria-labelledby="dados-em-lote">
+            <div>
+                <h3 id="dados-em-lote">Dados em lote</h3>
+                <p>Exporte registros para conferência ou importe um CSV separado por ponto e vírgula.</p>
+            </div>
+            <div class="links-exportacao">
+                <a href="/gestao-usuarios/exportar/usuarios.csv">Exportar usuários</a>
+                <a href="/gestao-usuarios/exportar/departamentos.csv">Exportar departamentos</a>
+            </div>
+            <div class="formularios-importacao">
+                <form action="/gestao-usuarios/importar/departamentos" method="POST" class="form-importacao" data-csv-import>
+                    <h4>Importar departamentos</h4>
+                    <p>Coluna obrigatória: <code>Nome</code>.</p>
+                    <label>Arquivo CSV <input type="file" accept=".csv,text/csv" required data-csv-file></label>
+                    <textarea name="csv_content" hidden></textarea>
+                    <button type="submit" class="btn-aceitar">Importar departamentos</button>
+                </form>
+                <form action="/gestao-usuarios/importar/usuarios" method="POST" class="form-importacao" data-csv-import>
+                    <h4>Importar usuários</h4>
+                    <p>Colunas: <code>Nome;E-mail;Senha;Departamento;Perfil</code>. A senha inicial deve ter ao menos 8 caracteres.</p>
+                    <label>Arquivo CSV <input type="file" accept=".csv,text/csv" required data-csv-file></label>
+                    <textarea name="csv_content" hidden></textarea>
+                    <button type="submit" class="btn-aceitar">Importar usuários</button>
+                </form>
+            </div>
+        </section>
 
         <h3 class="subtitulo-secao">Usuários Pendentes de Aprovação</h3>
         <div class="tabela-responsiva margin-bottom-grande">
@@ -126,5 +158,28 @@
     </main>
 
     <%- include('partials/footer') %>
+    <script>
+        document.querySelectorAll('[data-csv-import]').forEach(formulario => {
+            formulario.addEventListener('submit', evento => {
+                const arquivo = formulario.querySelector('[data-csv-file]').files[0];
+                const destino = formulario.querySelector('textarea[name="csv_content"]');
+                if (!arquivo || destino.value) return;
+
+                evento.preventDefault();
+                if (arquivo.size > 1024 * 1024) {
+                    window.alert('O arquivo deve ter no máximo 1 MB.');
+                    return;
+                }
+
+                const leitor = new FileReader();
+                leitor.onload = () => {
+                    destino.value = leitor.result;
+                    formulario.submit();
+                };
+                leitor.onerror = () => window.alert('Não foi possível ler o arquivo selecionado.');
+                leitor.readAsText(arquivo, 'UTF-8');
+            });
+        });
+    </script>
 </body>
 </html>

@@ -9,240 +9,126 @@
     <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const backendTheme = '<%= (locals.usuario && locals.usuario.tema) ? locals.usuario.tema : "" %>';
-        const localTheme = localStorage.getItem('tema');
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        
-        let themeToApply = 'light';
-        if (backendTheme && backendTheme !== 'system' && backendTheme !== '') {
-            themeToApply = backendTheme;
-        } else if (localTheme && localTheme !== 'system' && localTheme !== '') {
-            themeToApply = localTheme;
-        } else if (systemPrefersDark) {
-            themeToApply = 'dark';
-        }
-        
-        if (themeToApply === 'dark') {
-            document.documentElement.classList.add('dark-mode');
-        }
+        (function () {
+            const backendTheme = '<%= (locals.usuario && usuario.tema) ? usuario.tema : "" %>';
+            const localTheme = localStorage.getItem('tema');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = backendTheme && backendTheme !== 'system' ? backendTheme
+                : (localTheme && localTheme !== 'system' ? localTheme : (systemPrefersDark ? 'dark' : 'light'));
+            document.documentElement.classList.toggle('dark-mode', theme === 'dark');
+        })();
     </script>
 </head>
 <body>
     <%- include('partials/header') %>
-    
     <% 
         const stats = locals.estatisticas || {};
         const listaChamados = locals.ultimosChamados || [];
+        const categorias = locals.porCategoria || [];
+        const prioridades = locals.porPrioridade || [];
         const filtro = locals.filtroAtivo || 'todos';
-
-        function formatarDataHora(dataValor) {
-            if (!dataValor) return 'N/A';
-            const dataObj = new Date(dataValor);
-            return isNaN(dataObj.getTime()) ? 'N/A' : dataObj.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-        }
+        const periodo = locals.periodoAtivo || '30';
+        const periodoQuery = `periodo=${encodeURIComponent(periodo)}`;
+        const valorKpi = valor => Number(valor || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+        const formatarDataHora = data => data ? new Date(data).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A';
     %>
 
-    <main class="container-pagina">
-        <div class="cabecalho-pagina">
-            <h1>Painel de Controle (Dashboard)</h1>
-            <p class="subtitulo">Acompanhe as métricas, prioridades e prazos de SLA em tempo real.</p>
+    <main id="conteudo-principal" class="container-pagina">
+        <div class="cabecalho-pagina cabecalho-dashboard">
+            <div>
+                <h1>Painel de Controle</h1>
+                <p class="subtitulo">Indicadores operacionais, prioridades e cumprimento de SLA.</p>
+            </div>
+            <div class="acoes-dashboard">
+                <a class="btn-secundario-dashboard" href="/exportar/chamados.csv">Exportar chamados</a>
+                <% if (usuario && [1, 2].includes(Number(usuario.roleId))) { %>
+                    <a class="btn-secundario-dashboard" href="/exportar/sla.csv">Exportar SLA</a>
+                <% } %>
+            </div>
         </div>
 
-        <!-- Métricas Principais -->
-        <section class="cards-metrica">
-            <a href="/dashboard?filtro=atrasados" class="card-link">
-                <div class="card-metrica atrasados destaque-alerta <%= filtro === 'atrasados' ? 'ativo' : '' %>">
-                    <div class="metrica-cabecalho">
-                        <span class="metrica-titulo">SLA Estourado (Atrasados)</span>
-                        <span class="badge-alerta-animada">Atenção</span>
-                    </div>
-                    <span class="metrica-valor"><%= stats.chamados_atrasados || 0 %></span>
-                </div>
-            </a>
+        <form class="filtro-periodo" action="/dashboard" method="GET">
+            <input type="hidden" name="filtro" value="<%= filtro %>">
+            <label for="periodo">Período analisado</label>
+            <select id="periodo" name="periodo" onchange="this.form.submit()">
+                <option value="7" <%= periodo === '7' ? 'selected' : '' %>>Últimos 7 dias</option>
+                <option value="30" <%= periodo === '30' ? 'selected' : '' %>>Últimos 30 dias</option>
+                <option value="90" <%= periodo === '90' ? 'selected' : '' %>>Últimos 90 dias</option>
+                <option value="todos" <%= periodo === 'todos' ? 'selected' : '' %>>Todo o histórico</option>
+            </select>
+            <noscript><button type="submit">Aplicar</button></noscript>
+        </form>
 
-            <a href="/dashboard?filtro=urgentes" class="card-link">
-                <div class="card-metrica urgentes destaque-urgente <%= filtro === 'urgentes' ? 'ativo' : '' %>">
-                    <div class="metrica-cabecalho">
-                        <span class="metrica-titulo">Prioritários / Urgentes</span>
-                    </div>
-                    <span class="metrica-valor"><%= stats.chamados_urgentes || 0 %></span>
-                </div>
-            </a>
-
-            <a href="/dashboard?filtro=abertos" class="card-link">
-                <div class="card-metrica abertos <%= filtro === 'abertos' ? 'ativo' : '' %>">
-                    <span class="metrica-titulo">Abertos</span>
-                    <span class="metrica-valor"><%= stats.chamados_abertos || 0 %></span>
-                </div>
-            </a>
-
-            <a href="/dashboard?filtro=andamento" class="card-link">
-                <div class="card-metrica andamento <%= filtro === 'andamento' ? 'ativo' : '' %>">
-                    <span class="metrica-titulo">Em Andamento</span>
-                    <span class="metrica-valor"><%= stats.chamados_andamento || 0 %></span>
-                </div>
-            </a>
-
-            <a href="/dashboard?filtro=concluidos" class="card-link">
-                <div class="card-metrica concluidos <%= filtro === 'concluidos' ? 'ativo' : '' %>">
-                    <span class="metrica-titulo">Concluídos</span>
-                    <span class="metrica-valor"><%= stats.chamados_concluidos || 0 %></span>
-                </div>
-            </a>
-
-            <a href="/dashboard?filtro=todos" class="card-link">
-                <div class="card-metrica total <%= filtro === 'todos' ? 'ativo' : '' %>">
-                    <span class="metrica-titulo">Total Geral</span>
-                    <span class="metrica-valor"><%= stats.total_chamados || 0 %></span>
-                </div>
-            </a>
+        <section class="cards-metrica" aria-label="Indicadores de chamados">
+            <a href="/dashboard?filtro=atrasados&<%= periodoQuery %>" class="card-link"><div class="card-metrica atrasados destaque-alerta <%= filtro === 'atrasados' ? 'ativo' : '' %>"><span class="metrica-titulo">SLA atrasado</span><span class="metrica-valor"><%= valorKpi(stats.chamados_atrasados) %></span></div></a>
+            <a href="/dashboard?filtro=urgentes&<%= periodoQuery %>" class="card-link"><div class="card-metrica urgentes destaque-urgente <%= filtro === 'urgentes' ? 'ativo' : '' %>"><span class="metrica-titulo">Urgentes</span><span class="metrica-valor"><%= valorKpi(stats.chamados_urgentes) %></span></div></a>
+            <a href="/dashboard?filtro=abertos&<%= periodoQuery %>" class="card-link"><div class="card-metrica abertos <%= filtro === 'abertos' ? 'ativo' : '' %>"><span class="metrica-titulo">Abertos</span><span class="metrica-valor"><%= valorKpi(stats.chamados_abertos) %></span></div></a>
+            <a href="/dashboard?filtro=andamento&<%= periodoQuery %>" class="card-link"><div class="card-metrica andamento <%= filtro === 'andamento' ? 'ativo' : '' %>"><span class="metrica-titulo">Em andamento</span><span class="metrica-valor"><%= valorKpi(stats.chamados_andamento) %></span></div></a>
+            <a href="/dashboard?filtro=concluidos&<%= periodoQuery %>" class="card-link"><div class="card-metrica concluidos <%= filtro === 'concluidos' ? 'ativo' : '' %>"><span class="metrica-titulo">Concluídos</span><span class="metrica-valor"><%= valorKpi(stats.chamados_concluidos) %></span></div></a>
+            <a href="/dashboard?filtro=todos&<%= periodoQuery %>" class="card-link"><div class="card-metrica total <%= filtro === 'todos' ? 'ativo' : '' %>"><span class="metrica-titulo">Total</span><span class="metrica-valor"><%= valorKpi(stats.total_chamados) %></span></div></a>
         </section>
 
-        <!-- Seção do Gráfico de Insights -->
-        <section class="secao-graficos">
-            <div class="grafico-card">
-                <div class="grafico-header">
-                    <h2>Visão Geral da Operação</h2>
-                    <p>Distribuição de chamados por estado de atendimento e prioridade</p>
-                </div>
-                <div class="grafico-wrapper">
-                    <canvas id="graficoChamados"
-                        data-abertos="<%= stats.chamados_abertos || 0 %>"
-                        data-andamento="<%= stats.chamados_andamento || 0 %>"
-                        data-concluidos="<%= stats.chamados_concluidos || 0 %>"
-                        data-urgentes="<%= stats.chamados_urgentes || 0 %>"
-                        data-atrasados="<%= stats.chamados_atrasados || 0 %>">
-                    </canvas>
-                </div>
-            </div>
+        <section class="cards-kpi" aria-label="Indicadores de desempenho">
+            <article class="kpi-card"><span>Tempo médio de resposta</span><strong><%= valorKpi(stats.tempo_medio_resposta_horas) %> h</strong></article>
+            <article class="kpi-card"><span>Tempo médio de resolução</span><strong><%= valorKpi(stats.tempo_medio_resolucao_horas) %> h</strong></article>
+            <article class="kpi-card"><span>SLA cumprido nos concluídos</span><strong><%= valorKpi(stats.cumprimento_sla_percentual) %>%</strong></article>
         </section>
 
-        <!-- Tabela de Chamados Recentes -->
+        <section class="secao-graficos" aria-label="Distribuições de chamados">
+            <article class="grafico-card">
+                <div class="grafico-header"><h2>Chamados por categoria</h2><p>Principais origens de demanda no período.</p></div>
+                <div class="grafico-wrapper"><canvas id="graficoCategorias" data-labels="<%= JSON.stringify(categorias.map(item => item.nome)) %>" data-values="<%= JSON.stringify(categorias.map(item => item.quantidade)) %>"></canvas></div>
+            </article>
+            <article class="grafico-card">
+                <div class="grafico-header"><h2>Chamados por prioridade</h2><p>Volume distribuído por criticidade.</p></div>
+                <div class="grafico-wrapper"><canvas id="graficoPrioridades" data-labels="<%= JSON.stringify(prioridades.map(item => item.nome)) %>" data-values="<%= JSON.stringify(prioridades.map(item => item.quantidade)) %>"></canvas></div>
+            </article>
+        </section>
+
         <section class="secao-card">
-            <div class="secao-cabecalho">
-                <h2>Lista de Chamados <%= filtro !== 'todos' ? '(' + filtro.toUpperCase() + ')' : '' %></h2>
-            </div>
-            
+            <div class="secao-cabecalho"><h2>Chamados <%= filtro !== 'todos' ? `— ${filtro}` : 'recentes' %></h2></div>
             <div class="tabela-container">
                 <table class="tabela-padrao">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Título</th>
-                            <th>Status</th>
-                            <th>Prioridade</th>
-                            <th>Data de Criação</th>
-                            <th>Vencimento SLA</th>
-                            <th>Situação SLA</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>ID</th><th>Título</th><th>Status</th><th>Prioridade</th><th>Abertura</th><th>Vencimento SLA</th><th>Situação</th></tr></thead>
                     <tbody>
-                        <% if (listaChamados && listaChamados.length > 0) { %>
-                            <% listaChamados.forEach(function(chamado) { %>
-                                <% 
-                                    const statusNome = (chamado.status || '').toLowerCase();
-                                    const prioridadeNome = (chamado.priority || '').toLowerCase();
-                                    const isUrgenteOuCritico = ['crítica', 'critica', 'alta'].includes(prioridadeNome);
-                                    const isFinalizado = ['resolvido', 'fechado', 'concluido', 'concluído'].includes(statusNome);
-                                %>
-                                <tr class="<%= chamado.is_atrasado ? 'linha-atrasada' : (isUrgenteOuCritico ? 'linha-prioritaria' : '') %>">
-                                    <td><strong>#<%= chamado.id %></strong></td>
-                                    <td class="coluna-titulo"><%= chamado.title || 'Sem título' %></td>
-                                    <td>
-                                        <span class="tag-status status-<%= statusNome.replace(/\s+/g, '-') %>">
-                                            <%= chamado.status || 'Indefinido' %>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="tag-prioridade prioridade-<%= prioridadeNome.replace(/\s+/g, '-') %> <%= isUrgenteOuCritico ? 'prioridade-destaque' : '' %>">
-                                            <%= chamado.priority || 'Normal' %>
-                                        </span>
-                                    </td>
-                                    <td><%= formatarDataHora(chamado.created_at) %></td>
-                                    <td>
-                                        <% if (chamado.resolution_due_at) { %>
-                                            <span class="<%= chamado.is_atrasado ? 'texto-vencido' : '' %>">
-                                                <%= formatarDataHora(chamado.resolution_due_at) %>
-                                            </span>
-                                        <% } else { %>
-                                            <span class="texto-suave">Sem SLA</span>
-                                        <% } %>
-                                    </td>
-                                    <td>
-                                        <% if (isFinalizado) { %>
-                                            <span class="tag-sla concluido">Finalizado</span>
-                                        <% } else if (chamado.is_atrasado) { %>
-                                            <span class="tag-sla atrasado">Atrasado</span>
-                                        <% } else if (chamado.resolution_due_at) { %>
-                                            <span class="tag-sla no-prazo">No Prazo</span>
-                                        <% } else { %>
-                                            <span class="tag-sla n-a">N/A</span>
-                                        <% } %>
-                                    </td>
-                                </tr>
-                            <% }); %>
-                        <% } else { %>
-                            <tr>
-                                <td colspan="7" class="sem-dados">Nenhum chamado encontrado para este filtro.</td>
+                        <% if (listaChamados.length) { listaChamados.forEach(chamado => { %>
+                            <% const statusNome = String(chamado.status || '').toLowerCase(); const prioridadeNome = String(chamado.priority || '').toLowerCase(); const finalizado = ['resolvido', 'fechado', 'concluido', 'concluído'].includes(statusNome); %>
+                            <tr class="<%= chamado.is_atrasado ? 'linha-atrasada' : '' %>">
+                                <td><a class="link-detalhes" href="/chamados/<%= chamado.id %>">#<%= chamado.id %></a></td>
+                                <td class="coluna-titulo"><%= chamado.title || 'Sem título' %></td>
+                                <td><span class="tag-status status-<%= statusNome.replace(/\s+/g, '-') %>"><%= chamado.status || 'Indefinido' %></span></td>
+                                <td><span class="tag-prioridade prioridade-<%= prioridadeNome.replace(/\s+/g, '-') %>"><%= chamado.priority || 'Não definida' %></span></td>
+                                <td><%= formatarDataHora(chamado.created_at) %></td>
+                                <td><%= chamado.resolution_due_at ? formatarDataHora(chamado.resolution_due_at) : 'Sem SLA' %></td>
+                                <td><span class="tag-sla <%= finalizado ? 'concluido' : (chamado.is_atrasado ? 'atrasado' : 'no-prazo') %>"><%= finalizado ? 'Finalizado' : (chamado.is_atrasado ? 'Atrasado' : 'No prazo') %></span></td>
                             </tr>
+                        <% }); } else { %>
+                            <tr><td colspan="7" class="sem-dados">Nenhum chamado encontrado para o filtro escolhido.</td></tr>
                         <% } %>
                     </tbody>
                 </table>
             </div>
         </section>
     </main>
-
     <%- include('partials/footer') %>
-
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const canvas = document.getElementById('graficoChamados');
-            if (!canvas) return;
-            
-            const abertos = Number(canvas.dataset.abertos) || 0;
-            const andamento = Number(canvas.dataset.andamento) || 0;
-            const concluidos = Number(canvas.dataset.concluidos) || 0;
-            const urgentes = Number(canvas.dataset.urgentes) || 0;
-            const atrasados = Number(canvas.dataset.atrasados) || 0;
-
-            const ctx = canvas.getContext('2d');
-            const isDarkMode = document.documentElement.classList.contains('dark-mode');
-            const textColor = isDarkMode ? '#f8fafc' : '#1e293b';
-
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Abertos', 'Em Andamento', 'Concluídos', 'Urgentes/Prioritários', 'Atrasados (SLA)'],
-                    datasets: [{
-                        label: 'Quantidade',
-                        data: [abertos, andamento, concluidos, urgentes, atrasados],
-                        backgroundColor: [
-                            '#ef4444',
-                            '#3b82f6',
-                            '#10b981',
-                            '#f97316',
-                            '#dc2626'
-                        ],
-                        borderWidth: 2,
-                        borderColor: isDarkMode ? '#202024' : '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: textColor,
-                                font: { size: 12 },
-                                padding: 15
-                            }
-                        }
-                    },
-                    cutout: '65%'
-                }
-            });
+        document.addEventListener('DOMContentLoaded', () => {
+            const dark = document.documentElement.classList.contains('dark-mode');
+            const textColor = dark ? '#f8fafc' : '#1e293b';
+            const gridColor = dark ? '#3f3f46' : '#e2e8f0';
+            const criarGrafico = (id, cor) => {
+                const canvas = document.getElementById(id);
+                if (!canvas || !window.Chart) return;
+                const labels = JSON.parse(canvas.dataset.labels || '[]');
+                const valores = JSON.parse(canvas.dataset.values || '[]');
+                new Chart(canvas.getContext('2d'), {
+                    type: 'bar',
+                    data: { labels, datasets: [{ data: valores, backgroundColor: cor, borderRadius: 6, maxBarThickness: 48 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor }, grid: { display: false } }, y: { beginAtZero: true, ticks: { color: textColor, precision: 0 }, grid: { color: gridColor } } } }
+                });
+            };
+            criarGrafico('graficoCategorias', '#f97316');
+            criarGrafico('graficoPrioridades', '#fadc21');
         });
     </script>
 </body>

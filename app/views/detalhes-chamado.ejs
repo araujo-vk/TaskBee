@@ -8,90 +8,105 @@
     <link rel="stylesheet" href="/css/detalhes-chamado.css">
     <link rel="shortcut icon" type="image/x-icon" href="/TaskBee-Icon.ico">
     <script>
-        (function() {
-            // Usa 'locals.usuario' para evitar erros caso o usuário não esteja logado
+        (function () {
             const backendTheme = '<%= (locals.usuario && usuario.tema) ? usuario.tema : "" %>';
             const localTheme = localStorage.getItem('tema');
             const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            let themeToApply = 'light';
-            
-            // 1. Se houver preferência vinda do banco de dados (usuário logado)
-            if (backendTheme && backendTheme !== 'system' && backendTheme !== '') {
-                themeToApply = backendTheme;
-            } 
-            // 2. Se houver preferência no localStorage (visitante que já mudou o tema)
-            else if (localTheme && localTheme !== 'system' && localTheme !== '') {
-                themeToApply = localTheme;
-            } 
-            // 3. Senão, adota a preferência do sistema operacional/navegador
-            else if (systemPrefersDark) {
-                themeToApply = 'dark';
-            }
-            
-            // Aplica imediatamente na tag <html> para evitar a tela branca ao carregar
-            if (themeToApply === 'dark') {
-                document.documentElement.classList.add('dark-mode');
-            } else {
-                document.documentElement.classList.remove('dark-mode');
-            }
+            const theme = backendTheme && backendTheme !== 'system' ? backendTheme
+                : (localTheme && localTheme !== 'system' ? localTheme : (systemPrefersDark ? 'dark' : 'light'));
+            document.documentElement.classList.toggle('dark-mode', theme === 'dark');
         })();
     </script>
 </head>
 <body>
     <%- include('partials/header') %>
-
-    <main class="container-detalhes">
+    <% const equipe = usuario && [1, 2, 3].includes(Number(usuario.roleId)); %>
+    <main id="conteudo-principal" class="container-detalhes">
         <div class="cabecalho-detalhes">
-            <h2>Chamado #<%= chamado.id %></h2>
+            <div><h1>Chamado #<%= chamado.id %></h1><span class="texto-secundario">Atualizado em <%= chamado.updated_at ? new Date(chamado.updated_at).toLocaleString('pt-BR') : '—' %></span></div>
             <span class="badge-status"><%= chamado.status %></span>
         </div>
 
-        <div class="info-grid">
-            <p><strong>Título:</strong> <%= chamado.title %></p>
-            <p><strong>Solicitante:</strong> <%= chamado.solicitante %> (<%= chamado.email_solicitante %>)</p>
-            <p><strong>Tipo:</strong> <%= chamado.type %></p>
-            <p><strong>Categoria:</strong> <%= chamado.categoria || 'Não definida' %></p>
-            <p><strong>Prioridade:</strong> <%= chamado.prioridade || 'Não definida' %></p>
-            <p><strong>Serviço:</strong> <%= chamado.servico || 'Não definido' %></p>
-            <p><strong>Responsável:</strong> <%= chamado.tecnico || 'Ainda não atribuído' %></p>
-            <p><strong>Abertura:</strong> <%= new Date(chamado.created_at).toLocaleString('pt-PT') %></p>
-        </div>
-
-        <div class="info-grid">
-            <p><strong>Resposta até:</strong>
-                <%= chamado.response_due_at ? new Date(chamado.response_due_at).toLocaleString('pt-PT') : 'SLA não configurado' %>
-            </p>
-            <p><strong>Resolução até:</strong>
-                <%= chamado.resolution_due_at ? new Date(chamado.resolution_due_at).toLocaleString('pt-PT') : 'SLA não configurado' %>
-            </p>
-            <p><strong>SLA:</strong> <%= chamado.breached ? 'Violado' : (chamado.resolved_at ? 'Cumprido' : 'Em acompanhamento') %></p>
-        </div>
-
-        <div class="descricao-box">
-            <h3>Descrição</h3>
-            <p><%= chamado.description %></p>
-        </div>
-
-        <% if (usuario && Number(usuario.roleId) !== 4) { %>
-            <div class="alterar-status">
-                <h3>Atualizar Estado</h3>
-                <form action="/chamados/<%= chamado.id %>/status" method="POST">
-                    <select name="status_id" id="status_id" required>
-                        <% (status || []).forEach(item => { %>
-                            <option value="<%= item.id %>" <%= Number(chamado.status_id) === Number(item.id) ? 'selected' : '' %>>
-                                <%= item.name %>
-                            </option>
-                        <% }) %>
-                    </select>
-                    <button type="submit">Atualizar</button>
-                </form>
+        <section aria-labelledby="dados-chamado">
+            <h2 id="dados-chamado" class="titulo-secao">Informações do chamado</h2>
+            <div class="info-grid">
+                <p><strong>Título:</strong> <%= chamado.title %></p>
+                <p><strong>Solicitante:</strong> <%= chamado.solicitante %> (<%= chamado.email_solicitante %>)</p>
+                <p><strong>Tipo:</strong> <%= chamado.type %></p>
+                <p><strong>Categoria:</strong> <%= chamado.categoria || 'Não definida' %></p>
+                <p><strong>Prioridade:</strong> <%= chamado.prioridade || 'Não definida' %></p>
+                <p><strong>Serviço:</strong> <%= chamado.servico || 'Não definido' %></p>
+                <p><strong>Responsável:</strong> <%= chamado.tecnico || 'Ainda não atribuído' %></p>
+                <p><strong>Abertura:</strong> <%= new Date(chamado.created_at).toLocaleString('pt-BR') %></p>
             </div>
+        </section>
+
+        <section class="painel-sla" aria-labelledby="dados-sla">
+            <h2 id="dados-sla" class="titulo-secao">Acompanhamento de SLA</h2>
+            <div class="info-grid">
+                <p><strong>Resposta até:</strong> <%= chamado.response_due_at ? new Date(chamado.response_due_at).toLocaleString('pt-BR') : 'SLA não configurado' %></p>
+                <p><strong>Resolução até:</strong> <%= chamado.resolution_due_at ? new Date(chamado.resolution_due_at).toLocaleString('pt-BR') : 'SLA não configurado' %></p>
+                <p><strong>Primeira resposta:</strong> <%= chamado.responded_at ? new Date(chamado.responded_at).toLocaleString('pt-BR') : 'Pendente' %></p>
+                <p><strong>Situação:</strong> <%= chamado.breached ? 'Violado' : (chamado.resolved_at ? 'Cumprido' : 'Em acompanhamento') %></p>
+            </div>
+        </section>
+
+        <section class="descricao-box" aria-labelledby="descricao-chamado"><h2 id="descricao-chamado">Descrição</h2><p><%= chamado.description %></p></section>
+
+        <% if (equipe) { %>
+            <section class="acoes-chamado" aria-label="Gestão do chamado">
+                <form action="/chamados/<%= chamado.id %>/responsavel" method="POST">
+                    <label for="tecnico_id">Responsável técnico</label>
+                    <select name="tecnico_id" id="tecnico_id">
+                        <option value="">Não atribuído</option>
+                        <% (tecnicos || []).forEach(tecnico => { %><option value="<%= tecnico.id %>" <%= Number(chamado.assigned_to) === Number(tecnico.id) ? 'selected' : '' %>><%= tecnico.name %></option><% }) %>
+                    </select>
+                    <button type="submit">Salvar responsável</button>
+                </form>
+                <form action="/chamados/<%= chamado.id %>/status" method="POST">
+                    <label for="status_id">Status do chamado</label>
+                    <select name="status_id" id="status_id" required>
+                        <% (status || []).forEach(item => { %><option value="<%= item.id %>" <%= Number(chamado.status_id) === Number(item.id) ? 'selected' : '' %>><%= item.name %></option><% }) %>
+                    </select>
+                    <button type="submit">Atualizar status</button>
+                </form>
+            </section>
         <% } %>
+
+        <section id="comentarios" class="secao-detalhe" aria-labelledby="titulo-comentarios">
+            <h2 id="titulo-comentarios">Comentários</h2>
+            <div class="lista-comentarios">
+                <% if (comentarios && comentarios.length) { comentarios.forEach(item => { %>
+                    <article class="comentario <%= item.is_internal ? 'interno' : '' %>">
+                        <header><strong><%= item.autor %></strong><span><%= new Date(item.created_at).toLocaleString('pt-BR') %></span><% if (item.is_internal) { %><em>Nota interna</em><% } %></header>
+                        <p><%= item.comment %></p>
+                    </article>
+                <% }); } else { %><p class="vazio">Ainda não há comentários.</p><% } %>
+            </div>
+            <form class="form-comentario" action="/chamados/<%= chamado.id %>/comentarios" method="POST">
+                <label for="comentario">Adicionar comentário</label>
+                <textarea id="comentario" name="comentario" rows="4" maxlength="4000" required></textarea>
+                <% if (equipe) { %><label class="checkbox-interno"><input type="checkbox" name="interno" value="1"> Visível apenas para a equipe</label><% } %>
+                <button type="submit">Enviar comentário</button>
+            </form>
+        </section>
+
+        <section class="secao-detalhe" aria-labelledby="titulo-historico">
+            <h2 id="titulo-historico">Histórico</h2>
+            <% if (historico && historico.length) { %>
+                <ol class="linha-tempo">
+                    <% historico.forEach(item => { %><li><strong><%= item.autor || 'Sistema' %></strong> alterou <span><%= item.field_changed %></span> de “<%= item.old_value || '—' %>” para “<%= item.new_value || '—' %>”. <time><%= new Date(item.changed_at).toLocaleString('pt-BR') %></time></li><% }) %>
+                </ol>
+            <% } else { %><p class="vazio">Nenhuma alteração registrada até agora.</p><% } %>
+        </section>
+
+        <section class="secao-detalhe" aria-labelledby="titulo-anexos">
+            <h2 id="titulo-anexos">Anexos registrados</h2>
+            <% if (anexos && anexos.length) { %><ul class="lista-anexos"><% anexos.forEach(anexo => { %><li><strong><%= String(anexo.file_path || '').split(/[\\/]/).pop() || 'Arquivo' %></strong><span>Enviado por <%= anexo.enviado_por || 'usuário removido' %> em <%= new Date(anexo.uploaded_at).toLocaleString('pt-BR') %></span></li><% }) %></ul><% } else { %><p class="vazio">Nenhum anexo registrado.</p><% } %>
+        </section>
 
         <a href="/chamados" class="link-voltar">← Voltar para a lista</a>
     </main>
-
     <%- include('partials/footer') %>
 </body>
 </html>

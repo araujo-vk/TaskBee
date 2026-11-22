@@ -1,0 +1,132 @@
+/* --- ESTILOS DAS PÁGINAS DE ERRO - TASKBEE --- */
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-site, #f8fafc);
+    color: var(--texto-principal, #1e293b);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Container centralizado que empurra o footer para o final da tela */
+.error-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Cartão principal do erro */
+.error-card {
+    background-color: var(--bg-cartao, #ffffff);
+    border: 1px solid var(--borda-elemento, #e2e8f0);
+    border-top: 5px solid var(--cor-laranja, #ff9800);
+    border-radius: 16px;
+    padding: 45px 35px;
+    max-width: 550px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.error-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--texto-principal, #1e293b);
+    margin: 0 0 12px 0;
+}
+
+.error-message {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--texto-secundario, #64748b);
+    margin: 0 0 25px 0;
+}
+
+.error-image {
+    max-width: 240px;
+    width: 100%;
+    height: auto;
+    margin-bottom: 30px;
+    border-radius: 8px;
+    animation: flutuarSuave 3.5s ease-in-out infinite;
+}
+
+@keyframes flutuarSuave {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+/* Botão de retorno padronizado com a Landing Page */
+.error-link {
+    display: inline-block;
+    background-color: var(--cor-amarelo, #f5ab00);
+    color: #0a0a0a;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 14px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 12px rgba(245, 171, 0, 0.25);
+}
+
+.error-link:hover {
+    background-color: var(--cor-laranja, #ff9800);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(232, 93, 4, 0.35);
+}
+
+/* --- SUPORTE AO TEMA ESCURO (DARK MODE) --- */
+:root.dark-mode, body.dark-mode {
+    --bg-site: #121214;
+    --bg-cartao: #202024;
+    --texto-principal: #f8fafc;
+    --texto-secundario: #a1a1aa;
+    --borda-elemento: #3f3f46;
+}
+
+:root.dark-mode .error-card,
+body.dark-mode .error-card {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* --- RESPONSIVIDADE MOBILE --- */
+@media (max-width: 768px) {
+    .error-container {
+        padding: 25px 16px;
+    }
+
+    .error-card {
+        padding: 32px 20px;
+    }
+
+    .error-title {
+        font-size: 1.6rem;
+    }
+
+    .error-message {
+        font-size: 0.95rem;
+    }
+
+    .error-image {
+        max-width: 180px;
+        margin-bottom: 24px;
+    }
+
+    .error-link {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 12px 20px;
+    }
+}

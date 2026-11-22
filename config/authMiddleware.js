@@ -10,7 +10,7 @@ module.exports = function (req, res, next) {
   // 2. Lista de rotas públicas
   const rotasPublicas = ['/login', '/cadastro', '/cadastro-empresa', '/index', '/', '/admin', '/sobre'];
 
-  if (rotasPublicas.includes(req.path)) {
+  if (rotasPublicas.includes(req.path) || req.path.startsWith('/erro/')) {
     return next();
   }
 
@@ -40,7 +40,7 @@ module.exports = function (req, res, next) {
 
     // Se o perfil do usuário não estiver na lista, bloqueia o acesso
     if (!perfisPermitidos.includes(userRole)) {
-      return res.status(403).res.redirect('/error/403');
+    return res.redirect('/erro/403');
     }
   }
 

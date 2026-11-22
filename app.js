@@ -34,7 +34,7 @@ const routesPath = path.join(__dirname, 'app/routes');
 
 // Lê todos os arquivos dentro da pasta
 fs.readdirSync(routesPath).forEach((file) => {
-  if (file.endsWith('.js')) {
+  if (file.endsWith('.js') && file !== 'error.js') {
     const route = require(path.join(routesPath, file));
 
     // Verifica se o que foi exportado é de fato uma função
@@ -52,6 +52,9 @@ fs.readdirSync(routesPath).forEach((file) => {
     }
   }
 });
+
+// Rotas de fallback e tratamento de erros precisam ser registradas após as rotas da aplicação.
+require(path.join(routesPath, 'error.js'))(app);
 
 app.listen(3000, function () {
   console.log("Servidor Rodando!");

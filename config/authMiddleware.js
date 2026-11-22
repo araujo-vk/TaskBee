@@ -1,47 +1,89 @@
-// config/authMiddleware.js
-module.exports = function (req, res, next) {
-  // 1. Repassa o usuário para o EJS
-  if (req.session && req.session.usuarioLogado) {
-    res.locals.usuario = req.session.usuarioLogado;
-  } else {
-    res.locals.usuario = null;
+const { obterRoleId } = require('./roleMiddleware');
+
+// Rotas públicas. /admin permanece público porque é um painel de desenvolvimento.
+const rotasPublicas = new Set([
+  '/login',
+  '/cadastro',
+  '/cadastro-empresa',
+  '/index',
+  '/',
+  '/admin',
+  '/sobre'
+]);
+
+// As chaves mais específicas devem ser avaliadas primeiro.
+const restricoes = [
+  { prefixo: '/IA/relatorios', perfis: [1, 2] },
+  { prefixo: '/gestao-usuarios', perfis: [1, 2] },
+  { prefixo: '/gestao-sla', perfis: [1, 2] },
+  { prefixo: '/config-sistema', perfis: [1, 2] },
+  { prefixo: '/gestao-ativos', perfis: [1, 2, 3] },
+  { prefixo: '/logs', perfis: [1, 2] },
+  { prefixo: '/dashboard', perfis: [1, 2, 3] },
+  { prefixo: '/relatorios', perfis: [1, 2, 3] }
+].sort((a, b) => b.prefixo.length - a.prefixo.length);
+
+function pertenceAoPrefixo(caminho, prefixo) {
+  return caminho === prefixo || caminho.startsWith(`${prefixo}/`);
+}
+
+module.exports = async function (req, res, next) {
+  const usuario = req.session && req.session.usuarioLogado;
+
+  if (usuario) {
+    // Normaliza sessões antigas sem quebrar uma sessão criada antes desta correção.
+    usuario.roleId = obterRoleId(usuario);
+    usuario.tenantId = Number(usuario.tenantId ?? usuario.tenant_id);
+    usuario.nome = usuario.nome || usuario.name;
+
+    if (!Number.isInteger(usuario.roleId) || ![1, 2, 3, 4].includes(usuario.roleId)
+      || !Number.isInteger(usuario.tenantId) || usuario.tenantId <= 0) {
+      return req.session.destroy(() => res.redirect('/login'));
+    }
+
+    try {
+      const [usuariosAtivos] = await req.db.query(
+        `SELECT name, role_id, tenant_id, tema
+         FROM users
+         WHERE id = ? AND tenant_id = ? AND is_active = TRUE
+         LIMIT 1`,
+        [usuario.id, usuario.tenantId]
+      );
+
+      if (usuariosAtivos.length === 0) {
+        return req.session.destroy(() => res.redirect('/login'));
+      }
+
+      // Atualiza o papel e o nome caso um gestor tenha alterado a conta.
+      usuario.nome = usuariosAtivos[0].name;
+      usuario.roleId = Number(usuariosAtivos[0].role_id);
+      usuario.tenantId = Number(usuariosAtivos[0].tenant_id);
+      usuario.tema = usuariosAtivos[0].tema;
+    } catch (erro) {
+      return next(erro);
+    }
+
+    req.usuario = usuario;
   }
 
-  // 2. Lista de rotas públicas
-  const rotasPublicas = ['/login', '/cadastro', '/cadastro-empresa', '/index', '/', '/admin', '/sobre'];
+  res.locals.usuario = usuario || null;
 
-  if (rotasPublicas.includes(req.path) || req.path.startsWith('/erro/')) {
+  if (rotasPublicas.has(req.path) || req.path.startsWith('/erro/')) {
     return next();
   }
 
-  // 3. Se não estiver logado, redireciona
-  if (!req.session || !req.session.usuarioLogado) {
+  if (!usuario) {
+    if (req.path.startsWith('/api/')) {
+      return res.status(401).json({ erro: 'Usuário não autenticado.' });
+    }
+
     return res.redirect('/login');
   }
 
-  // 4. Lista de Restrições por Nível de Acesso
-  const restricoes = {
-    '/gestao-usuarios': [1, 2], // Apenas Admin (1) e Gestor (2)
-    '/logs': [1, 2],            
-    '/relatorios': [1, 2, 3],     
-  };
+  const restricao = restricoes.find(item => pertenceAoPrefixo(req.path, item.prefixo));
 
-  const usuario = req.session.usuarioLogado;
-
-  // CORREÇÃO 1: Identifica a propriedade correta e garante a conversão para Número
-  const userRole = Number(usuario.roleId || usuario.role || usuario.role_id);
-
-  // 5. Verifica se a rota atual possui restrição
-  const rotaRestrita = Object.keys(restricoes).find(rota => req.path.startsWith(rota));
-
-  if (rotaRestrita) {
-    // CORREÇÃO 2: Garante que todos os elementos da lista permitida também sejam Números
-    const perfisPermitidos = restricoes[rotaRestrita].map(Number);
-
-    // Se o perfil do usuário não estiver na lista, bloqueia o acesso
-    if (!perfisPermitidos.includes(userRole)) {
+  if (restricao && !restricao.perfis.includes(usuario.roleId)) {
     return res.redirect('/erro/403');
-    }
   }
 
   return next();

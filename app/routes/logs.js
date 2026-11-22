@@ -1,10 +1,12 @@
+const { possuiPerfil } = require('../../config/roleMiddleware');
+
 module.exports = function (app) {
   app.get("/logs", async function (req, res) {
     const usuario = req.session.usuarioLogado;
     
     // Restringe o acesso apenas para Admin (1) ou Gestor (2)
-    if (!usuario || usuario.roleId > 2) {
-        return res.status(403).send('Acesso negado.');
+    if (!possuiPerfil(usuario, 1, 2)) {
+        return res.redirect('/erro/403');
     }
 
     try {

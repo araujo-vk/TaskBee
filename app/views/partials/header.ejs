@@ -13,13 +13,26 @@
     
     <nav class="nav-links" id="navLinks">
         <% if (usuario) { %>
+            <% const roleId = Number(usuario.roleId); %>
             <span class="saudacao">Olá, <%= usuario.nome || usuario.name %>!</span>
             <a href="/chamados">Meus Chamados</a>
             <a href="/chamados/novo">Novo Chamado</a>
-            
-            <% if (usuario.roleId === 1 || usuario.roleId === 2) { %>
-                <a href="/gestao-usuarios">Gestão de Usuários</a>
+
+            <% if ([1, 2, 3].includes(roleId)) { %>
+                <a href="/dashboard">Dashboard</a>
             <% } %>
+
+            <% if ([1, 2].includes(roleId)) { %>
+                <a href="/gestao-usuarios">Gestão de Usuários</a>
+                <a href="/gestao-sla">SLA</a>
+                <a href="/logs">Logs</a>
+            <% } %>
+
+            <% if ([1, 2, 3].includes(roleId)) { %>
+                <a href="/gestao-ativos">Ativos</a>
+            <% } %>
+
+            <a href="/IA">AskBee</a>
             
             <a href="/logout" class="btn-logout">Sair</a>
         <% } else { %>

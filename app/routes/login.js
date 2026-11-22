@@ -35,22 +35,36 @@ module.exports = function (app) {
         return res.render("login", { erro: "Email ou senha incorretos." });
       }
 
-      // 4. Salva os dados na sessão
-      req.session.usuarioLogado = {
-        id: usuario[0].id,
-        nome: usuario[0].name,
-        role: usuario[0].role_id,
-        tenantId: usuario[0].tenant_id,
-        tema: usuario[0].tema
-      };
-
-      // 5. Garante que a sessão foi salva antes de redirecionar
-      req.session.save((err) => {
-        if (err) {
-          console.error("Erro ao salvar sessão:", err);
+      // Regenera o identificador da sessão após o login e usa um formato único.
+      req.session.regenerate((erroSessao) => {
+        if (erroSessao) {
+          console.error("Erro ao criar sessão:", erroSessao);
           return res.render("login", { erro: "Erro ao criar sessão." });
         }
-        res.redirect("/index");
+
+        req.session.usuarioLogado = {
+          id: usuario[0].id,
+          nome: usuario[0].name,
+          roleId: Number(usuario[0].role_id),
+          tenantId: Number(usuario[0].tenant_id),
+          tema: usuario[0].tema
+        };
+
+        req.session.save((erroSalvar) => {
+          if (erroSalvar) {
+            console.error("Erro ao salvar sessão:", erroSalvar);
+            return res.render("login", { erro: "Erro ao criar sessão." });
+          }
+
+          const destinos = {
+            1: "/dashboard",
+            2: "/dashboard",
+            3: "/chamados",
+            4: "/chamados"
+          };
+
+          return res.redirect(destinos[Number(usuario[0].role_id)] || "/chamados");
+        });
       });
 
     } catch (error) {
@@ -61,7 +75,12 @@ module.exports = function (app) {
 
   // Rota para sair do sistema (Logout)
   app.get("/logout", function (req, res) {
-    req.session.destroy(() => {
+    req.session.destroy((erro) => {
+      if (erro) {
+        console.error("Erro ao encerrar sessão:", erro);
+      }
+
+      res.clearCookie('connect.sid');
       res.redirect("/login");
     });
   });

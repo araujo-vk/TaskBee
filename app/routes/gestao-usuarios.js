@@ -1,10 +1,11 @@
-const { apenasPerfis } = require('../../config/roleMiddleware');
+const { possuiPerfil, obterRoleId } = require('../../config/roleMiddleware');
 
 module.exports = function (app) {
 
   // 1. ROTA PRINCIPAL: Listagem de Usuários (Ativos e Pendentes com Ordenação)
   app.get('/gestao-usuarios', async (req, res) => {
-    const tenantId = req.session.usuarioLogado ? req.session.usuarioLogado.tenantId : null;
+    const usuarioLogado = req.session.usuarioLogado;
+    const tenantId = usuarioLogado ? usuarioLogado.tenantId : null;
 
     if (!tenantId) {
       return res.redirect('/login');
@@ -86,12 +87,18 @@ module.exports = function (app) {
 
   // 2. ROTA: Processar Aceitação / Rejeição de Pendentes
   app.post('/gestao-usuarios/processar', async (req, res) => {
-    const processadoPorId = req.session.usuarioLogado ? req.session.usuarioLogado.id : null;
+    const usuarioLogado = req.session.usuarioLogado;
+    const processadoPorId = usuarioLogado ? usuarioLogado.id : null;
     if (!processadoPorId) {
       return res.redirect('/login');
     }
 
+    if (!possuiPerfil(usuarioLogado, 1, 2)) {
+      return res.redirect('/erro/403');
+    }
+
     const { usuarioId, acao } = req.body;
+    const tenantId = Number(usuarioLogado.tenantId);
     const db = req.db;
 
     try {
@@ -99,13 +106,13 @@ module.exports = function (app) {
 
       if (acao === 'aceitar') {
         const [dadosPendente] = await db.query(
-          'SELECT * FROM pending_users WHERE id = ?',
-          [usuarioId]
+          'SELECT * FROM pending_users WHERE id = ? AND tenant_id = ? AND status = \'pendente\'',
+          [usuarioId, tenantId]
         );
 
         if (dadosPendente.length === 0) {
           await db.query('ROLLBACK');
-          return res.status(404).send('Usuário pendente não encontrado.');
+          return res.redirect('/erro/404');
         }
 
         const u = dadosPendente[0];
@@ -119,16 +126,16 @@ module.exports = function (app) {
         await db.query(
           `UPDATE pending_users 
            SET status = 'aprovado', processed_at = CURRENT_TIMESTAMP, processed_by = ?
-           WHERE id = ?`,
-          [processadoPorId, usuarioId]
+           WHERE id = ? AND tenant_id = ?`,
+          [processadoPorId, usuarioId, tenantId]
         );
 
       } else if (acao === 'rejeitar') {
         await db.query(
           `UPDATE pending_users 
            SET status = 'recusado', processed_at = CURRENT_TIMESTAMP, processed_by = ?
-           WHERE id = ?`,
-          [processadoPorId, usuarioId]
+           WHERE id = ? AND tenant_id = ?`,
+          [processadoPorId, usuarioId, tenantId]
         );
       } else {
         await db.query('ROLLBACK');
@@ -147,9 +154,14 @@ module.exports = function (app) {
 
   // 3. ROTA (GET): Carregar Tela de Edição de Usuário
   app.get('/gestao-usuarios/editar/:id', async (req, res) => {
-    const tenantId = req.session.usuarioLogado ? req.session.usuarioLogado.tenantId : null;
+    const usuarioLogado = req.session.usuarioLogado;
+    const tenantId = usuarioLogado ? usuarioLogado.tenantId : null;
     if (!tenantId) {
       return res.redirect('/login');
+    }
+
+    if (!possuiPerfil(usuarioLogado, 1, 2)) {
+      return res.redirect('/erro/403');
     }
 
     const usuarioId = req.params.id;
@@ -164,7 +176,7 @@ module.exports = function (app) {
       );
 
       if (usuarioResult.length === 0) {
-        return res.status(404).send('Usuário não encontrado.');
+        return res.redirect('/erro/404');
       }
 
       // Busca departamentos cadastrados para a empresa
@@ -194,6 +206,10 @@ module.exports = function (app) {
     
     if (!tenantId) return res.redirect('/login');
 
+    if (!possuiPerfil(usuarioLogado, 1, 2)) {
+      return res.redirect('/erro/403');
+    }
+
     const usuarioId = req.params.id;
     const { nome, email, department_id, role_id, is_active } = req.body;
 
@@ -201,21 +217,40 @@ module.exports = function (app) {
       // 1. Busca os dados atuais do usuário que vai ser editado
       const [alvo] = await req.db.query('SELECT role_id FROM users WHERE id = ? AND tenant_id = ?', [usuarioId, tenantId]);
       
-      if (alvo.length === 0) return res.status(404).send('Usuário não encontrado.');
+      if (alvo.length === 0) return res.redirect('/erro/404');
 
       // 2. Regra de Negócio: O roleId do usuário logado (ex: 3) não pode ser MAIOR (menor ranque) 
       // que o role_id de quem ele tenta editar (ex: 1), nem pode conceder um ranque maior que o seu próprio.
-      if (usuarioLogado.roleId > alvo[0].role_id || usuarioLogado.roleId > role_id) {
-          return res.status(403).send('Acesso negado: Não tem permissão para alterar este utilizador ou conceder este nível de acesso.');
+      const roleLogado = obterRoleId(usuarioLogado);
+      const roleAlvo = Number(alvo[0].role_id);
+      const novoRole = Number(role_id);
+
+      if (![1, 2, 3, 4].includes(novoRole)) {
+        return res.status(400).send('Nível de acesso inválido.');
+      }
+
+      if (roleLogado > roleAlvo || roleLogado > novoRole) {
+          return res.redirect('/erro/403');
       }
 
       const depId = department_id && department_id !== '' ? department_id : null;
+
+      if (depId) {
+        const [departamento] = await req.db.query(
+          'SELECT id FROM departments WHERE id = ? AND tenant_id = ?',
+          [depId, tenantId]
+        );
+
+        if (departamento.length === 0) {
+          return res.status(400).send('Departamento inválido para esta empresa.');
+        }
+      }
 
       await req.db.query(
         `UPDATE users 
           SET name = ?, email = ?, role_id = ?, department_id = ?, is_active = ?
           WHERE id = ? AND tenant_id = ?`,
-        [nome, email, role_id, depId, is_active, usuarioId, tenantId]
+        [nome, email, novoRole, depId, is_active === '1' || is_active === 1 ? 1 : 0, usuarioId, tenantId]
       );
 
       res.redirect('/gestao-usuarios');
@@ -240,16 +275,25 @@ module.exports = function (app) {
 
   // 5. ROTA (GET): Deletar Usuário
   app.get('/gestao-usuarios/deletar/:id', async (req, res) => {
-    const tenantId = req.session.usuarioLogado ? req.session.usuarioLogado.tenantId : null;
+    const usuarioLogado = req.session.usuarioLogado;
+    const tenantId = usuarioLogado ? usuarioLogado.tenantId : null;
     if (!tenantId) {
       return res.redirect('/login');
+    }
+
+    if (!possuiPerfil(usuarioLogado, 1)) {
+      return res.redirect('/erro/403');
     }
 
     const usuarioId = req.params.id;
 
     try {
+      if (Number(usuarioId) === Number(usuarioLogado.id)) {
+        return res.status(400).send('O usuário atual não pode desativar a própria conta.');
+      }
+
       await req.db.query(
-        'DELETE FROM users WHERE id = ? AND tenant_id = ?',
+        'UPDATE users SET is_active = 0 WHERE id = ? AND tenant_id = ?',
         [usuarioId, tenantId]
       );
 

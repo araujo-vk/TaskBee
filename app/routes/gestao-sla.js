@@ -3,7 +3,7 @@ module.exports = function (app) {
   app.get("/gestao-sla", async function (request, response) {
     try {
       const userId = request.session.usuarioLogado && request.session.usuarioLogado.id;
-      const tenantId = request.session.usuarioLogado && request.session.usuarioLogado.tenant_id;
+      const tenantId = request.session.usuarioLogado && request.session.usuarioLogado.tenantId;
 
       if (!userId) return response.redirect("/login");
 
@@ -29,7 +29,7 @@ module.exports = function (app) {
   app.post("/gestao-sla/salvar", async function (request, response) {
     try {
       const userId = request.session.usuarioLogado && request.session.usuarioLogado.id;
-      const tenantId = request.session.usuarioLogado && request.session.usuarioLogado.tenant_id;
+      const tenantId = request.session.usuarioLogado && request.session.usuarioLogado.tenantId;
 
       if (!userId) return response.redirect("/login");
       

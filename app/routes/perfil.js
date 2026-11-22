@@ -17,7 +17,7 @@ module.exports = function (app) {
       await registrarLog(req.db, usuario.tenantId, usuario.id, 'Atualizar', 'Perfil', usuario.id, `Alterou o nome de perfil para: ${novoNome}`);
 
       // Atualiza o nome na sessão também
-      req.session.usuarioLogado.name = novoNome;
+      req.session.usuarioLogado.nome = novoNome;
       
       res.redirect("/perfil");
     } catch (error) { /* ... */ }

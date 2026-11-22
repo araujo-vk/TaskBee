@@ -59,7 +59,7 @@
             <p><%= chamado.description %></p>
         </div>
 
-        <% if (usuario && usuario.role !== 4 || chamado.requester_id === usuario.id) { %>
+        <% if (usuario && Number(usuario.roleId) !== 4) { %>
             <div class="alterar-status">
                 <h3>Atualizar Estado</h3>
                 <form action="/chamados/<%= chamado.id %>/status" method="POST">

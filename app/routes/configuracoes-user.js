@@ -1,5 +1,7 @@
 // public/js/routes/configuracoes-user_6.js (ou o caminho equivalente no seu projeto)
 
+const bcrypt = require('bcrypt');
+
 module.exports = function (app) { 
   app.get("/configuracoes-user", async function (request, response) {
     try {
@@ -22,13 +24,13 @@ module.exports = function (app) {
         FROM users u
         LEFT JOIN departments d ON u.department_id = d.id
         LEFT JOIN tenants t ON u.tenant_id = t.id
-        WHERE u.id = ?
+          WHERE u.id = ? AND u.tenant_id = ?
       `;
 
-      const [results] = await request.db.query(sql, [userId]);
+      const [results] = await request.db.query(sql, [userId, request.session.usuarioLogado.tenantId]);
 
       if (results.length === 0) {
-        return response.status(404).send("Usuário não encontrado.");
+        return response.redirect('/erro/404');
       }
 
       const usuario = results[0];
@@ -50,9 +52,10 @@ module.exports = function (app) {
       if (!userId) return response.redirect("/login");
 
       const { nome, email, senha, 'confirmar-senha': confirmarSenha } = request.body;
+      const tenantId = request.session.usuarioLogado.tenantId;
 
-      let sql = `UPDATE users SET name = ?, email = ? WHERE id = ?`;
-      let params = [nome, email, userId];
+      let sql = `UPDATE users SET name = ?, email = ? WHERE id = ? AND tenant_id = ?`;
+      let params = [nome, email, userId, tenantId];
 
       if (senha || confirmarSenha) {
         if (senha !== confirmarSenha) {
@@ -60,8 +63,9 @@ module.exports = function (app) {
         }
         
         if (senha.trim() !== "") {
-          sql = `UPDATE users SET name = ?, email = ?, password_hash = ? WHERE id = ?`;
-          params = [nome, email, senha, userId];
+          const passwordHash = await bcrypt.hash(senha, 10);
+          sql = `UPDATE users SET name = ?, email = ?, password_hash = ? WHERE id = ? AND tenant_id = ?`;
+          params = [nome, email, passwordHash, userId, tenantId];
         }
       }
 
@@ -92,7 +96,10 @@ module.exports = function (app) {
       }
 
       // Atualiza o banco de dados
-      await request.db.query(`UPDATE users SET tema = ? WHERE id = ?`, [tema, userId]);
+      await request.db.query(
+        `UPDATE users SET tema = ? WHERE id = ? AND tenant_id = ?`,
+        [tema, userId, request.session.usuarioLogado.tenantId]
+      );
 
       // Atualiza na sessão se estiver guardando lá
       if (request.session.usuarioLogado) {

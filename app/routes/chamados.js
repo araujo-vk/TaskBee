@@ -1,5 +1,6 @@
 const { registrarLog } = require('../../config/logger');
 const { enviarNotificacao } = require('../../config/notificador');
+const { possuiPerfil } = require('../../config/roleMiddleware');
 
 module.exports = function (app) {
 
@@ -51,7 +52,7 @@ module.exports = function (app) {
     }
 
     // Identifica e padroniza o nível de acesso
-    const userRole = Number(usuario.roleId || usuario.role || usuario.role_id);
+    const userRole = Number(usuario.roleId);
 
     const colunasPermitidas = {
       id: 't.id',
@@ -117,7 +118,7 @@ module.exports = function (app) {
       return res.redirect('/login');
     }
 
-    const userRole = Number(usuario.roleId || usuario.role || usuario.role_id);
+    const userRole = Number(usuario.roleId);
 
     try {
       let query = `SELECT 
@@ -145,7 +146,7 @@ module.exports = function (app) {
       const [resultados] = await req.db.query(query, params);
 
       if (resultados.length === 0) {
-        return res.status(404).send('Chamado não encontrado ou acesso não permitido.');
+        return res.redirect('/erro/404');
       }
 
       res.render('detalhes-chamado', { chamado: resultados[0] });
@@ -159,22 +160,43 @@ module.exports = function (app) {
   app.post('/chamados/:id/status', async (req, res) => {
     const usuario = req.session.usuarioLogado;
     const chamadoId = req.params.id;
-    const { status_id } = req.body;
+    const statusId = Number(req.body.status_id);
 
     if (!usuario) {
       return res.redirect('/login');
     }
 
+    if (!possuiPerfil(usuario, 1, 2, 3)) {
+      return res.redirect('/erro/403');
+    }
+
+    if (!Number.isInteger(statusId)) {
+      return res.status(400).send('Status inválido.');
+    }
+
     try {
       // Busca dados do ticket para identificar o solicitante e título
       const [ticketInfo] = await req.db.query(
-        `SELECT requester_id, title FROM tickets WHERE id = ? AND tenant_id = ?`,
+        `SELECT requester_id, title, status_id FROM tickets WHERE id = ? AND tenant_id = ?`,
         [chamadoId, usuario.tenantId]
       );
 
+      if (ticketInfo.length === 0) {
+        return res.redirect('/erro/404');
+      }
+
+      const [statusValido] = await req.db.query(
+        'SELECT id FROM statuses WHERE id = ? AND tenant_id = ?',
+        [statusId, usuario.tenantId]
+      );
+
+      if (statusValido.length === 0) {
+        return res.status(400).send('Status inválido para esta empresa.');
+      }
+
       await req.db.query(
         `UPDATE tickets SET status_id = ? WHERE id = ? AND tenant_id = ?`,
-        [status_id, chamadoId, usuario.tenantId]
+        [statusId, chamadoId, usuario.tenantId]
       );
 
       // REGISTO DE LOG DE AUDITORIA
@@ -185,7 +207,7 @@ module.exports = function (app) {
         'Atualizar',
         'Chamado',
         chamadoId,
-        `Status alterado para ID: ${status_id}`
+        `Status alterado de ID ${ticketInfo[0].status_id} para ID ${statusId}`
       );
 
       // DISPARO DE NOTIFICAÇÃO AO SOLICITANTE
@@ -194,7 +216,7 @@ module.exports = function (app) {
         const tituloTicket = ticketInfo[0].title;
 
         // ID 3 = Resolvido na tabela statuses
-        if (parseInt(status_id) === 3) {
+        if (statusId === 3) {
           await enviarNotificacao(
             req.db,
             usuario.tenantId,
@@ -225,8 +247,12 @@ module.exports = function (app) {
     const usuario = req.session.usuarioLogado;
     const chamadoId = req.params.id;
 
-    if (!usuario || (usuario.roleId !== 1 && usuario.roleId !== 2)) {
-      return res.status(403).send('Acesso negado.');
+    if (!usuario) {
+      return res.redirect('/login');
+    }
+
+    if (!possuiPerfil(usuario, 1, 2)) {
+      return res.redirect('/erro/403');
     }
 
     try {

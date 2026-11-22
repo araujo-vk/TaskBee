@@ -1,18 +1,63 @@
-// config/roleMiddleware.js
+// Middleware centralizado para autenticação e autorização.
 
-// Criamos uma função que recebe quais cargos têm permissão
-function apenasPerfis(perfisPermitidos) {
+function obterUsuario(req) {
+  return req.session && req.session.usuarioLogado
+    ? req.session.usuarioLogado
+    : null;
+}
+
+function obterRoleId(usuario) {
+  return Number(usuario && (usuario.roleId ?? usuario.role ?? usuario.role_id));
+}
+
+function responderNaoAutenticado(req, res) {
+  if (req.path.startsWith('/api/')) {
+    return res.status(401).json({ erro: 'Usuário não autenticado.' });
+  }
+
+  return res.redirect('/login');
+}
+
+function exigirAutenticacao(req, res, next) {
+  const usuario = obterUsuario(req);
+
+  if (!usuario) {
+    return responderNaoAutenticado(req, res);
+  }
+
+  req.usuario = usuario;
+  return next();
+}
+
+function exigirPerfis(...perfisPermitidos) {
+  const perfis = perfisPermitidos.map(Number);
+
   return function (req, res, next) {
-    const usuario = req.session.usuarioLogado;
+    const usuario = obterUsuario(req);
 
-    // Se o cargo do usuário estiver na lista de permitidos, deixa passar
-    if (usuario && perfisPermitidos.includes(usuario.role)) {
-      return next();
+    if (!usuario) {
+      return responderNaoAutenticado(req, res);
     }
 
-    // Se não tiver permissão, renderiza uma tela de erro ou redireciona
-    res.status(403).send("Acesso Negado: Você não tem permissão para acessar esta página.");
+    const roleId = obterRoleId(usuario);
+
+    if (!perfis.includes(roleId)) {
+      return res.redirect('/erro/403');
+    }
+
+    req.usuario = usuario;
+    return next();
   };
 }
 
-module.exports = { apenasPerfis };
+function possuiPerfil(usuario, ...perfisPermitidos) {
+  return perfisPermitidos.map(Number).includes(obterRoleId(usuario));
+}
+
+module.exports = {
+  obterUsuario,
+  obterRoleId,
+  exigirAutenticacao,
+  exigirPerfis,
+  possuiPerfil
+};

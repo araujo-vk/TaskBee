@@ -7,36 +7,6 @@ module.exports = function (app) {
     "511", "777"
   ];
 
-  // Rotas de páginas permitidas (sem barra inicial, suportando subcaminhos)
-  const paginasPermitidas = [
-    "admin",
-    "base-de-conhecimento",
-    "cadastro",
-    "catalogo-servicos",
-    "chamados",
-    "chamados/novo",
-    "config-sistema",
-    "configuracoes-user",
-    "dashboard",
-    "gestao-ativos",
-    "gestao-sla",
-    "gestao-usuarios",
-    "IA",
-    "IA/relatorios",
-    "login",
-    "logs",
-    "notificoes",
-    "portal-solicitante",
-    "sobre"
-  ];
-
-  // Normaliza o caminho para aceitar com ou sem barra no final (ex: "/chamados/novo/" -> "chamados/novo")
-  function normalizarCaminho(valor) {
-    if (!valor) return "";
-    const texto = Array.isArray(valor) ? valor.join("/") : String(valor);
-    return texto.replace(/^\/+|\/+$/g, "");
-  }
-
   // 1. Rota direta para páginas de erro (Ex: /erro/404, /erro/500)
   app.get("/erro/:codigo", function (request, response) {
     const codigo = request.params.codigo;
@@ -54,25 +24,7 @@ module.exports = function (app) {
     });
   });
 
-  // 2. Resolução de páginas cadastradas em paginasPermitidas (Express 5.2.1)
-  app.get("/{*caminho}", function (request, response, next) {
-    const caminho = normalizarCaminho(request.params.caminho);
-
-    // Deixa o middleware de 404 tratar rotas /erro/... não casadas acima
-    if (caminho === "erro" || caminho.startsWith("erro/")) {
-      return next();
-    }
-
-    if (paginasPermitidas.includes(caminho)) {
-      return response.render(caminho, {
-        usuario: request.session?.usuarioLogado || null
-      });
-    }
-
-    return next();
-  });
-
-  // 3. Captura qualquer rota não cadastrada ou inexistente -> 404
+  // 2. Captura qualquer rota não cadastrada ou inexistente -> 404
   app.use(function (request, response, next) {
     response.status(404).render("error/404", {
       usuario: request.session?.usuarioLogado || null,
@@ -80,7 +32,7 @@ module.exports = function (app) {
     });
   });
 
-  // 4. Middleware global de tratamento de erros (sempre por último e com 4 argumentos)
+  // 3. Middleware global de tratamento de erros (sempre por último e com 4 argumentos)
   app.use(function (err, request, response, next) {
     console.error("❌ Erro capturado pelo sistema:", err.stack || err);
 

@@ -34,7 +34,7 @@
             <p class="error-message">O servidor não suporta a versão do protocolo HTTP utilizada na requisição.</p>
             <img src="/images/505.png" alt="Erro 505" class="error-image">
             <!-- Arctic Monkeys-->
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

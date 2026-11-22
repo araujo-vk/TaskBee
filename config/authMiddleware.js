@@ -1,6 +1,6 @@
 const { obterRoleId } = require('./roleMiddleware');
 
-// Rotas públicas. O painel /admin só pode ser habilitado explicitamente em desenvolvimento.
+// Páginas de visitante; /admin continua exigindo sessão de qualquer perfil.
 const rotasPublicas = new Set([
   '/login',
   '/cadastro',
@@ -29,6 +29,15 @@ function pertenceAoPrefixo(caminho, prefixo) {
 }
 
 module.exports = async function (req, res, next) {
+  const caminho = (req.path.replace(/\/+$/, '') || '/').toLowerCase();
+  const publica = rotasPublicas.has(caminho) || caminho.startsWith('/erro/');
+  res.locals.usuario = null;
+  res.locals.usuarioLogado = null;
+  res.locals.notificacoesNaoLidas = 0;
+  function sessaoInvalida() {
+    delete req.session.usuarioLogado;
+    return publica ? next() : res.redirect('/login');
+  }
   const usuario = req.session && req.session.usuarioLogado;
 
   if (usuario) {
@@ -39,7 +48,7 @@ module.exports = async function (req, res, next) {
 
     if (!Number.isInteger(usuario.roleId) || ![1, 2, 3, 4].includes(usuario.roleId)
       || !Number.isInteger(usuario.tenantId) || usuario.tenantId <= 0) {
-      return req.session.destroy(() => res.redirect('/login'));
+      return sessaoInvalida();
     }
 
     try {
@@ -52,7 +61,7 @@ module.exports = async function (req, res, next) {
       );
 
       if (usuariosAtivos.length === 0) {
-        return req.session.destroy(() => res.redirect('/login'));
+        return sessaoInvalida();
       }
 
       // Atualiza o papel e o nome caso um gestor tenha alterado a conta.
@@ -77,7 +86,7 @@ module.exports = async function (req, res, next) {
   res.locals.usuario = usuario || null;
   res.locals.usuarioLogado = usuario || null;
 
-  if (rotasPublicas.has(req.path) || req.path.startsWith('/erro/')) {
+  if (publica) {
     return next();
   }
 
@@ -89,7 +98,7 @@ module.exports = async function (req, res, next) {
     return res.redirect('/login');
   }
 
-  const restricao = restricoes.find(item => pertenceAoPrefixo(req.path, item.prefixo));
+  const restricao = restricoes.find(item => pertenceAoPrefixo(caminho, item.prefixo.toLowerCase()));
 
   if (restricao && !restricao.perfis.includes(usuario.roleId)) {
     return res.redirect('/erro/403');

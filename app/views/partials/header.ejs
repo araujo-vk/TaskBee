@@ -5,7 +5,7 @@
 
 <header class="site-header <%= locals.usuarioLogado ? 'site-header--app' : 'site-header--public' %>">
     <div class="logo">
-        <a href="/" aria-label="TaskBee — início"><img src="/TaskBee-Logo.png" alt=""><span class="brand-name">TaskBee</span></a>
+        <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" aria-label="TaskBee — início"><img src="/TaskBee-Logo.png" alt=""><span class="brand-name">TaskBee</span></a>
     </div>
     
     <!-- Botão Hambúrguer (exibido apenas no mobile) -->
@@ -49,6 +49,7 @@
                 <button type="submit" class="btn-logout">Sair</button>
             </form>
         <% } else { %>
+            <a href="/sobre">Sobre o projeto</a>
             <a href="/login">Entrar</a>
             <a href="/cadastro">Cadastrar</a>
             <a href="/cadastro-empresa" class="btn-destaque">Cadastrar Empresa</a>

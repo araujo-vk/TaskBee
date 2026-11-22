@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 407 - Proxy Authentication Required</h1>
             <p class="error-message">Você precisa autenticar-se com um proxy para acessar esta página.</p>
             <img src="/images/407.png" alt="Erro 407" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

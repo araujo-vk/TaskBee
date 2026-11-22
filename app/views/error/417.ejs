@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 417 - Expectation Failed</h1>
             <p class="error-message">A expectativa solicitada não pôde ser atendida.</p>
             <img src="/images/417.png" alt="Erro 417" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

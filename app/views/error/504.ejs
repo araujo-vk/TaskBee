@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 504 - Gateway Timeout</h1>
             <p class="error-message">O servidor não recebeu uma resposta a tempo de um servidor upstream.</p>
             <img src="/images/504.png" alt="Erro 504" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

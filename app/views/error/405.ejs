@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 405 - Method Not Allowed</h1>
             <p class="error-message">O método HTTP utilizado não é permitido para esta página.</p>
             <img src="/images/405.png" alt="Erro 405" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

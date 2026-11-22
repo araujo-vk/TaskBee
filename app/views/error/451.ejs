@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 451 - Unavailable For Legal Reasons</h1>
             <p class="error-message">Indisponível por razões Legais.</p>
             <img src="/images/451.png" alt="Erro 451" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

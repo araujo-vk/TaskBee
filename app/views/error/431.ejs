@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 431 - Request Header Fields Too Large</h1>
             <p class="error-message">Os campos do cabeçalho da solicitação são muito grandes.</p>
             <img src="/images/431.png" alt="Erro 431" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

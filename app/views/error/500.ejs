@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 500 - Service Unavailable</h1>
             <p class="error-message">Ocorreu um erro interno no servidor. Tente novamente mais tarde.</p>
             <img src="/images/500.png" alt="Erro 500" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

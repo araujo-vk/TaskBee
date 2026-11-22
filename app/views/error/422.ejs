@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 422 - Unprocessable Entity</h1>
             <p class="error-message">A solicitação está bem formada, mas não pode ser processada devido a erros semânticos.</p>
             <img src="/images/422.png" alt="Erro 422" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

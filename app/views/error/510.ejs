@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 510 - Not Extended</h1>
             <p class="error-message">O servidor não suporta a extensão solicitada.</p>
             <img src="/images/510.png" alt="Erro 510" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

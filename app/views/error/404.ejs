@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 404 - Not Found</h1>
             <p class="error-message">A página que você está procurando não foi encontrada, ou não existe.</p>
             <img src="/images/404.png" alt="Erro 404" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 412 - Precondition Failed</h1>
             <p class="error-message">O servidor não atendeu à condição prévia solicitada.</p>
             <img src="/images/412.png" alt="Erro 412" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

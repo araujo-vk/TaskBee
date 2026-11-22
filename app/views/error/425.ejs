@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 425 - Too Early</h1>
             <p class="error-message">O servidor não está pronto para processar a solicitação.</p>
             <img src="/images/425.png" alt="Erro 425" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

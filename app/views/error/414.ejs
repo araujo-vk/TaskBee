@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 414 - URI Too Long</h1>
             <p class="error-message">O URI da solicitação é muito longo para ser processado pelo servidor.</p>
             <img src="/images/414.png" alt="Erro 414" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

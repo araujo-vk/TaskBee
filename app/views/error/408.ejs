@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 408 - Request Timeout</h1>
             <p class="error-message">A solicitação expirou antes de ser concluída.</p>
             <img src="/images/408.png" alt="Erro 408" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

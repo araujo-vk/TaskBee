@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 424 - Failed Dependency</h1>
             <p class="error-message">A dependência necessária para o pedido falhou.</p>
             <img src="/images/424.png" alt="Erro 424" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 416 - Range Not Satisfiable</h1>
             <p class="error-message">O intervalo solicitado não pode ser atendido.</p>
             <img src="/images/416.png" alt="Erro 416" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

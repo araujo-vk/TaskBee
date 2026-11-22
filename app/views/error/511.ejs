@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 511 - Network Authentication Required</h1>
             <p class="error-message">O servidor requer autenticação de rede.</p>
             <img src="/images/511.png" alt="Erro 511" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 403 - Forbidden</h1>
             <p class="error-message">Você não tem permissão para acessar esta página. Tente fazer login com outra conta ou contate o administrador.</p>
             <img src="/images/403.png" alt="Erro 403" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

@@ -34,7 +34,7 @@
             <p class="error-message">O Servidor se recusa a coar café em um bule de chá.</p>
             <img src="/images/418.png" alt="Erro 418" class="error-image">
             <!-- Se possível adicionar boss fight contra a chaleira, no estilo Undertale-->
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

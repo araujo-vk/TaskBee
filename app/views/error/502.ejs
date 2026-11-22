@@ -34,7 +34,7 @@
             <p class="error-message">O servidor recebeu uma resposta inválida de um servidor upstream.</p>
             <img src="/images/502.png" alt="Erro 502" class="error-image">
             <!-- Bad Apple Ref v2-->
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 402 - Payment Required</h1>
             <p class="error-message">Página bloqueada. Pagamento não realizado.</p>
             <img src="/images/402.png" alt="Erro 402" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 429 - Too Many Requests</h1>
             <p class="error-message">Você está fazendo muitas solicitações em um curto período de tempo.</p>
             <img src="/images/429.png" alt="Erro 429" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 506 - Variant Also Negotiates</h1>
             <p class="error-message">O servidor recebeu uma resposta inválida de um servidor upstream.</p>
             <img src="/images/506.png" alt="Erro 506" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 415 - Unsupported Media Type</h1>
             <p class="error-message">O tipo de mídia da solicitação não é suportado pelo servidor.</p>
             <img src="/images/415.png" alt="Erro 415" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

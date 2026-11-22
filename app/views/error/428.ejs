@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 428 - Precondition Required</h1>
             <p class="error-message">O servidor requer que o cliente envie condições prévias para continuar.</p>
             <img src="/images/428.png" alt="Erro 428" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

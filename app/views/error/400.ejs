@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 400 - Bad Request</h1>
             <p class="error-message">A solicitação que você fez não é válida.</p>
             <img src="/images/400.png" alt="Erro 400" class="error-image"> <!-- Bad Apple Reference-->
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

@@ -33,7 +33,7 @@
             <h1 class="error-title">Erro 413 - Content Too Large</h1>
             <p class="error-message">O conteúdo da solicitação é maior do que o servidor está disposto a processar.</p>
             <img src="/images/413.png" alt="Erro 413" class="error-image">
-            <a href="/" class="error-link">Voltar para a página inicial</a>
+            <a href="<%= locals.usuarioLogado ? '/chamados' : '/index' %>" class="error-link">Voltar para a página inicial</a>
         </div>
     </div>
     <%- include('../partials/footer') %>

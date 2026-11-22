@@ -93,20 +93,27 @@ npm install express-session
 ```
 
 
-3. **Configurar o Banco de Dados:**
-* Abra seu SGBD (Foi usado o MySQL Workbench nesse projeto).
-* Execute o script contido no arquivo `banco.sql` para criar o banco de dados e as tabelas.
-* Abra o arquivo `db.js` na raiz do projeto e ajuste as credenciais do seu MySQL (`host`, `user`, `password`).
+3. **Configurar ambiente e Banco de Dados:**
+* Copie `.env.example` para `.env` e preencha `DB_USER`, `DB_PASSWORD`, `DB_NAME` e `SESSION_SECRET`.
+* Para um banco novo, execute `database/banco.sql`.
+* Para atualizar um banco que já existia antes da sessão persistente e dos anexos protegidos, execute uma única vez `database/migrations/001_core_hardening.sql`.
+* A pasta `storage/tickets` guarda anexos fora da área pública e precisa ter permissão de escrita.
 
 
 4. **Iniciar o Servidor:**
 ```bash
-node app.js
+npm start
 
 ```
 
 
 5. **Acessar no Navegador:**
 Acesse `http://localhost:3000/` para utilizar o sistema.
+
+### Testes automatizados
+
+```bash
+npm test
+```
 
 ---

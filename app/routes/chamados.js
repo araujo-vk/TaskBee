@@ -1,8 +1,18 @@
 const { registrarLog } = require('../../config/logger');
 const { enviarNotificacao } = require('../../config/notificador');
 const { possuiPerfil } = require('../../config/roleMiddleware');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 
 const TIPOS_CHAMADO = ['incidente', 'requisicao', 'problema', 'mudanca', 'outro'];
+const TIPOS_ANEXO = {
+  'image/png': '.png',
+  'image/jpeg': '.jpg',
+  'application/pdf': '.pdf',
+  'text/plain': '.txt'
+};
+const DIRETORIO_ANEXOS = path.join(__dirname, '..', '..', 'storage', 'tickets');
 
 async function carregarOpcoesChamado(db, tenantId) {
   const [categorias, prioridades, servicos] = await Promise.all([
@@ -40,7 +50,7 @@ async function buscarTicketAcessivel(db, ticketId, usuario) {
   let consulta = `
     SELECT id, requester_id, assigned_to, title, status_id
     FROM tickets
-    WHERE id = ? AND tenant_id = ?`;
+    WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL`;
   const parametros = [ticketId, usuario.tenantId];
 
   if (Number(usuario.roleId) === 4) {
@@ -58,7 +68,11 @@ module.exports = function (app) {
   app.get('/chamados/novo', async (req, res) => {
     try {
       const opcoes = await carregarOpcoesChamado(req.db, req.session.usuarioLogado.tenantId);
-      res.render('novo-chamado', { erro: null, ...opcoes });
+      const servicoId = Number(req.query.servico_id) || null;
+      const valores = servicoId && opcoes.servicos.some(item => item.id === servicoId)
+        ? { serviceId: servicoId }
+        : {};
+      res.render('novo-chamado', { erro: null, ...opcoes, valores });
     } catch (error) {
       console.error('Erro ao carregar opções do chamado:', error);
       res.status(500).send('Erro ao carregar o formulário de chamado.');
@@ -245,10 +259,49 @@ module.exports = function (app) {
     const sort = req.query.sort || 'data';
     const order = req.query.order === 'asc' ? 'ASC' : 'DESC';
     const colunaOrdenacao = colunasPermitidas[sort] || 't.created_at';
+    const filtros = {
+      busca: String(req.query.busca || '').trim().slice(0, 100),
+      statusId: Number(req.query.status_id) || null,
+      prioridadeId: Number(req.query.prioridade_id) || null,
+      categoriaId: Number(req.query.categoria_id) || null
+    };
+    const pagina = Math.max(Number.parseInt(req.query.pagina, 10) || 1, 1);
+    const limite = 20;
 
     try {
-      let query = `
-        SELECT 
+      const joins = `
+        FROM tickets t
+        LEFT JOIN statuses s ON s.id = t.status_id AND s.tenant_id = t.tenant_id
+        LEFT JOIN priorities p ON p.id = t.priority_id AND p.tenant_id = t.tenant_id
+        LEFT JOIN ticket_categories c ON c.id = t.category_id AND c.tenant_id = t.tenant_id
+        LEFT JOIN users u ON u.id = t.requester_id AND u.tenant_id = t.tenant_id
+      `;
+      let condicoes = ' WHERE t.tenant_id = ? AND t.deleted_at IS NULL';
+      const params = [usuario.tenantId];
+
+      if (userRole === 4) {
+        condicoes += ' AND t.requester_id = ?';
+        params.push(usuario.id);
+      }
+      if (filtros.busca) {
+        condicoes += ' AND (t.title LIKE ? OR t.description LIKE ? OR CAST(t.id AS CHAR) = ?)';
+        params.push(`%${filtros.busca}%`, `%${filtros.busca}%`, filtros.busca);
+      }
+      if (filtros.statusId) {
+        condicoes += ' AND t.status_id = ?';
+        params.push(filtros.statusId);
+      }
+      if (filtros.prioridadeId) {
+        condicoes += ' AND t.priority_id = ?';
+        params.push(filtros.prioridadeId);
+      }
+      if (filtros.categoriaId) {
+        condicoes += ' AND t.category_id = ?';
+        params.push(filtros.categoriaId);
+      }
+
+      const query = `
+        SELECT
           t.id,
           t.title AS titulo,
           t.description AS descricao,
@@ -258,28 +311,30 @@ module.exports = function (app) {
           c.name AS categoria,
           u.name AS solicitante,
           t.created_at AS dataCriacao
-        FROM tickets t
-        LEFT JOIN statuses s ON s.id = t.status_id AND s.tenant_id = t.tenant_id
-        LEFT JOIN priorities p ON p.id = t.priority_id AND p.tenant_id = t.tenant_id
-        LEFT JOIN ticket_categories c ON c.id = t.category_id AND c.tenant_id = t.tenant_id
-        LEFT JOIN users u ON u.id = t.requester_id AND u.tenant_id = t.tenant_id
-        WHERE t.tenant_id = ?
-      `;
+        ${joins}${condicoes}
+        ORDER BY ${colunaOrdenacao} ${order}
+        LIMIT ? OFFSET ?`;
 
-      const params = [usuario.tenantId];
+      const [[chamados], [contagem], [status], [prioridades], [categorias]] = await Promise.all([
+        req.db.query(query, [...params, limite, (pagina - 1) * limite]),
+        req.db.query(`SELECT COUNT(*) AS total ${joins}${condicoes}`, params),
+        req.db.query('SELECT id, name FROM statuses WHERE tenant_id = ? ORDER BY name', [usuario.tenantId]),
+        req.db.query('SELECT id, name FROM priorities WHERE tenant_id = ? ORDER BY weight DESC', [usuario.tenantId]),
+        req.db.query('SELECT id, name FROM ticket_categories WHERE tenant_id = ? ORDER BY name', [usuario.tenantId])
+      ]);
+      const totalPaginas = Math.max(Math.ceil(Number(contagem[0].total) / limite), 1);
+      const queryBase = new URLSearchParams({
+        busca: filtros.busca,
+        status_id: filtros.statusId || '',
+        prioridade_id: filtros.prioridadeId || '',
+        categoria_id: filtros.categoriaId || ''
+      }).toString();
 
-      // Se for Solicitante (nível 4), filtra apenas os chamados criados por ele
-      // Se for Técnico (3), Gestor (2) ou Admin (1), a query traz todos da empresa
-      if (userRole === 4) {
-        query += ` AND t.requester_id = ?`;
-        params.push(usuario.id);
-      }
-
-      query += ` ORDER BY ${colunaOrdenacao} ${order}`;
-
-      const [chamados] = await req.db.query(query, params);
-
-      res.render('chamados', { chamados, sortAtual: sort, ordemAtual: order });
+      res.render('chamados', {
+        chamados, status, prioridades, categorias, filtros,
+        paginaAtual: Math.min(pagina, totalPaginas), totalPaginas, queryBase,
+        sortAtual: sort, ordemAtual: order
+      });
     } catch (error) {
       console.error('Erro ao listar chamados:', error);
       res.status(500).send('Erro interno do servidor ao carregar chamados.');
@@ -311,7 +366,11 @@ module.exports = function (app) {
            st.resolution_due_at,
            st.responded_at,
            st.resolved_at,
-           st.breached
+           CASE
+             WHEN st.resolution_due_at < NOW()
+                  AND LOWER(COALESCE(s.name, '')) NOT IN ('resolvido', 'fechado', 'concluído', 'concluido')
+             THEN TRUE ELSE st.breached
+           END AS breached
          FROM tickets t
          LEFT JOIN statuses s ON s.id = t.status_id AND s.tenant_id = t.tenant_id
          LEFT JOIN priorities p ON p.id = t.priority_id AND p.tenant_id = t.tenant_id
@@ -320,7 +379,7 @@ module.exports = function (app) {
          LEFT JOIN services srv ON srv.id = t.service_id AND srv.tenant_id = t.tenant_id
          LEFT JOIN users tecnico ON tecnico.id = t.assigned_to AND tecnico.tenant_id = t.tenant_id
          LEFT JOIN sla_tracking st ON st.ticket_id = t.id AND st.tenant_id = t.tenant_id
-         WHERE t.id = ? AND t.tenant_id = ?`;
+         WHERE t.id = ? AND t.tenant_id = ? AND t.deleted_at IS NULL`;
 
       const params = [chamadoId, usuario.tenantId];
 
@@ -361,7 +420,8 @@ module.exports = function (app) {
           [chamadoId, usuario.tenantId]
         ),
         req.db.query(
-          `SELECT ta.id, ta.file_path, ta.uploaded_at, u.name AS enviado_por
+          `SELECT ta.id, ta.file_path, ta.original_name, ta.mime_type, ta.file_size,
+                  ta.uploaded_at, u.name AS enviado_por
            FROM ticket_attachments ta
            LEFT JOIN users u ON u.id = ta.uploaded_by AND u.tenant_id = ta.tenant_id
            WHERE ta.ticket_id = ? AND ta.tenant_id = ?
@@ -422,6 +482,21 @@ module.exports = function (app) {
         VALUES (?, ?, ?, ?, ?)
       `, [usuario.tenantId, chamadoId, usuario.id, comentario, interno]);
 
+      const destinatario = Number(ticket.requester_id) !== Number(usuario.id)
+        ? ticket.requester_id
+        : ticket.assigned_to;
+      if (!interno && destinatario && Number(destinatario) !== Number(usuario.id)) {
+        await enviarNotificacao(
+          req.db,
+          usuario.tenantId,
+          destinatario,
+          'Novo comentário no chamado',
+          `O chamado #${chamadoId} recebeu um novo comentário.`,
+          'info',
+          `/chamados/${chamadoId}#comentarios`
+        );
+      }
+
       return res.redirect(`/chamados/${chamadoId}#comentarios`);
     } catch (error) {
       console.error('Erro ao registrar comentário:', error);
@@ -429,7 +504,74 @@ module.exports = function (app) {
     }
   });
 
-  // 6. Atribuir ou remover o responsável técnico
+  // 6. Upload controlado de anexos, armazenados fora da pasta pública
+  app.post('/chamados/:id/anexos', async (req, res) => {
+    const usuario = req.session.usuarioLogado;
+    const chamadoId = Number(req.params.id);
+    if (!usuario) return res.redirect('/login');
+
+    try {
+      const ticket = await buscarTicketAcessivel(req.db, chamadoId, usuario);
+      if (!ticket) return res.redirect('/erro/404');
+
+      const conteudo = String(req.body.arquivo_base64 || '');
+      const correspondencia = conteudo.match(/^data:([^;]+);base64,([A-Za-z0-9+/=]+)$/);
+      if (!correspondencia || !TIPOS_ANEXO[correspondencia[1]]) {
+        return res.status(400).send('Formato inválido. Envie PNG, JPG, PDF ou TXT.');
+      }
+
+      const buffer = Buffer.from(correspondencia[2], 'base64');
+      if (!buffer.length || buffer.length > 2 * 1024 * 1024) {
+        return res.status(400).send('O anexo deve ter no máximo 2 MB.');
+      }
+
+      await fs.promises.mkdir(DIRETORIO_ANEXOS, { recursive: true });
+      const nomeInterno = `${crypto.randomUUID()}${TIPOS_ANEXO[correspondencia[1]]}`;
+      await fs.promises.writeFile(path.join(DIRETORIO_ANEXOS, nomeInterno), buffer, { flag: 'wx' });
+
+      try {
+        const nomeOriginal = path.basename(String(req.body.arquivo_nome || 'anexo')).slice(0, 255);
+        await req.db.query(`
+          INSERT INTO ticket_attachments
+            (tenant_id, ticket_id, file_path, original_name, mime_type, file_size, uploaded_by)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [usuario.tenantId, chamadoId, nomeInterno, nomeOriginal, correspondencia[1], buffer.length, usuario.id]);
+      } catch (erroBanco) {
+        await fs.promises.unlink(path.join(DIRETORIO_ANEXOS, nomeInterno)).catch(() => {});
+        throw erroBanco;
+      }
+
+      return res.redirect(`/chamados/${chamadoId}#titulo-anexos`);
+    } catch (erro) {
+      console.error('Erro ao enviar anexo:', erro);
+      return res.status(500).send('Não foi possível enviar o anexo.');
+    }
+  });
+
+  app.get('/chamados/:id/anexos/:anexoId', async (req, res) => {
+    const usuario = req.session.usuarioLogado;
+    if (!usuario) return res.redirect('/login');
+
+    try {
+      const ticket = await buscarTicketAcessivel(req.db, req.params.id, usuario);
+      if (!ticket) return res.redirect('/erro/404');
+      const [anexos] = await req.db.query(`
+        SELECT file_path, original_name FROM ticket_attachments
+        WHERE id = ? AND ticket_id = ? AND tenant_id = ?
+      `, [req.params.anexoId, ticket.id, usuario.tenantId]);
+      if (!anexos.length) return res.redirect('/erro/404');
+
+      const nomeInterno = path.basename(anexos[0].file_path);
+      const caminho = path.join(DIRETORIO_ANEXOS, nomeInterno);
+      if (!fs.existsSync(caminho)) return res.status(404).send('O arquivo físico não foi encontrado.');
+      return res.download(caminho, anexos[0].original_name || nomeInterno);
+    } catch (erro) {
+      console.error('Erro ao baixar anexo:', erro);
+      return res.status(500).send('Não foi possível baixar o anexo.');
+    }
+  });
+
+  // 7. Atribuir ou remover o responsável técnico
   app.post('/chamados/:id/responsavel', async (req, res) => {
     const usuario = req.session.usuarioLogado;
     const chamadoId = Number(req.params.id);
@@ -446,7 +588,7 @@ module.exports = function (app) {
         SELECT t.id, t.assigned_to, atual.name AS responsavel_atual
         FROM tickets t
         LEFT JOIN users atual ON atual.id = t.assigned_to AND atual.tenant_id = t.tenant_id
-        WHERE t.id = ? AND t.tenant_id = ?
+        WHERE t.id = ? AND t.tenant_id = ? AND t.deleted_at IS NULL
       `, [chamadoId, usuario.tenantId]);
       if (!tickets.length) return res.redirect('/erro/404');
 
@@ -476,6 +618,18 @@ module.exports = function (app) {
         usuario.id
       ]);
       await registrarLog(req.db, usuario.tenantId, usuario.id, 'Atualizar', 'Chamado', chamadoId, 'Responsável do chamado atualizado.');
+
+      if (novoResponsavel && Number(novoResponsavel.id) !== Number(usuario.id)) {
+        await enviarNotificacao(
+          req.db,
+          usuario.tenantId,
+          novoResponsavel.id,
+          'Chamado atribuído a você',
+          `Você foi definido como responsável pelo chamado #${chamadoId}.`,
+          'info',
+          `/chamados/${chamadoId}`
+        );
+      }
 
       return res.redirect(`/chamados/${chamadoId}`);
     } catch (error) {
@@ -508,7 +662,7 @@ module.exports = function (app) {
         `SELECT t.requester_id, t.title, t.status_id, s.name AS status_atual
          FROM tickets t
          LEFT JOIN statuses s ON s.id = t.status_id AND s.tenant_id = t.tenant_id
-         WHERE t.id = ? AND t.tenant_id = ?`,
+         WHERE t.id = ? AND t.tenant_id = ? AND t.deleted_at IS NULL`,
         [chamadoId, usuario.tenantId]
       );
 
@@ -532,7 +686,7 @@ module.exports = function (app) {
       await req.db.query(
         `UPDATE tickets
          SET status_id = ?, closed_at = CASE WHEN ? = 1 THEN COALESCE(closed_at, NOW()) ELSE NULL END
-         WHERE id = ? AND tenant_id = ?`,
+         WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL`,
         [statusId, resolvido ? 1 : 0, chamadoId, usuario.tenantId]
       );
 
@@ -559,7 +713,16 @@ module.exports = function (app) {
       if (resolvido) {
         await req.db.query(
           `UPDATE sla_tracking
-           SET resolved_at = COALESCE(resolved_at, NOW())
+           SET resolved_at = COALESCE(resolved_at, NOW()),
+               breached = CASE WHEN resolution_due_at < NOW() THEN TRUE ELSE breached END
+           WHERE ticket_id = ? AND tenant_id = ?`,
+          [chamadoId, usuario.tenantId]
+        );
+      } else {
+        await req.db.query(
+          `UPDATE sla_tracking
+           SET resolved_at = NULL,
+               breached = CASE WHEN resolution_due_at < NOW() THEN TRUE ELSE FALSE END
            WHERE ticket_id = ? AND tenant_id = ?`,
           [chamadoId, usuario.tenantId]
         );
@@ -588,7 +751,9 @@ module.exports = function (app) {
             usuario.tenantId,
             requesterId,
             'Chamado Resolvido',
-            `O seu chamado #${chamadoId} ("${tituloTicket}") foi marcado como resolvido.`
+            `O seu chamado #${chamadoId} ("${tituloTicket}") foi marcado como resolvido.`,
+            'success',
+            `/chamados/${chamadoId}`
           );
         } else {
           await enviarNotificacao(
@@ -596,7 +761,9 @@ module.exports = function (app) {
             usuario.tenantId,
             requesterId,
             'Atualização de Chamado',
-            `O estado do seu chamado #${chamadoId} ("${tituloTicket}") foi alterado.`
+            `O estado do seu chamado #${chamadoId} ("${tituloTicket}") foi alterado.`,
+            'info',
+            `/chamados/${chamadoId}`
           );
         }
       }
@@ -622,20 +789,22 @@ module.exports = function (app) {
     }
 
     try {
-      await req.db.query(
-        `DELETE FROM tickets WHERE id = ? AND tenant_id = ?`,
+      const [resultado] = await req.db.query(
+        `UPDATE tickets SET deleted_at = NOW() WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL`,
         [chamadoId, usuario.tenantId]
       );
+
+      if (resultado.affectedRows === 0) return res.redirect('/erro/404');
 
       // REGISTO DE LOG DE AUDITORIA
       await registrarLog(
         req.db,
         usuario.tenantId,
         usuario.id,
-        'Excluir',
+        'Arquivar',
         'Chamado',
         chamadoId,
-        `Chamado #${chamadoId} excluído permanentemente.`
+        `Chamado #${chamadoId} arquivado.`
       );
 
       res.redirect('/chamados');

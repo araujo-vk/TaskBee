@@ -17,7 +17,7 @@ module.exports = function (app) {
           t.created_at AS dataCriacao
         FROM tickets t
         LEFT JOIN statuses s ON s.id = t.status_id
-        WHERE t.tenant_id = ? AND t.requester_id = ?
+        WHERE t.tenant_id = ? AND t.requester_id = ? AND t.deleted_at IS NULL
         ORDER BY t.created_at DESC
       `, [usuario.tenantId, usuario.id]);
 

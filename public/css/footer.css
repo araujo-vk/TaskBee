@@ -1,7 +1,7 @@
 /* public/css/footer.css */
 .site-footer {
-    background-color: #0a0a0a; /* Fixo para se manter sempre escuro/elegante */
-    color: #f8fafc; /* Texto claro fixo */
+    background-color: var(--bg-footer);
+    color: var(--texto-secundario);
     text-align: center;
     padding: 25px 15px;
     margin-top: auto;
@@ -20,7 +20,7 @@
 }
 
 .footer-links a {
-    color: var(--cor-amarelo);
+    color: var(--texto-principal);
     text-decoration: none;
     font-size: 13px;
     transition: color 0.2s ease;

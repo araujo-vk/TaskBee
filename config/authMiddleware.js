@@ -1,20 +1,24 @@
 const { obterRoleId } = require('./roleMiddleware');
 
-// Rotas públicas. /admin permanece público porque é um painel de desenvolvimento.
+// Rotas públicas. O painel /admin só pode ser habilitado explicitamente em desenvolvimento.
 const rotasPublicas = new Set([
   '/login',
   '/cadastro',
   '/cadastro-empresa',
   '/index',
   '/',
-  '/admin',
   '/sobre'
 ]);
+
+if (process.env.NODE_ENV !== 'production' && process.env.ENABLE_DEV_ADMIN === 'true') {
+  rotasPublicas.add('/admin');
+}
 
 // As chaves mais específicas devem ser avaliadas primeiro.
 const restricoes = [
   { prefixo: '/IA/relatorios', perfis: [1, 2] },
   { prefixo: '/gestao-usuarios', perfis: [1, 2] },
+  { prefixo: '/gestao-cadastros', perfis: [1, 2] },
   { prefixo: '/gestao-sla', perfis: [1, 2] },
   { prefixo: '/config-sistema', perfis: [1, 2] },
   { prefixo: '/gestao-ativos', perfis: [1, 2, 3] },
@@ -59,6 +63,13 @@ module.exports = async function (req, res, next) {
       usuario.roleId = Number(usuariosAtivos[0].role_id);
       usuario.tenantId = Number(usuariosAtivos[0].tenant_id);
       usuario.tema = usuariosAtivos[0].tema;
+
+      const [contagemNotificacoes] = await req.db.query(`
+        SELECT COUNT(*) AS total
+        FROM notifications
+        WHERE tenant_id = ? AND user_id = ? AND is_read = FALSE
+      `, [usuario.tenantId, usuario.id]);
+      res.locals.notificacoesNaoLidas = Number(contagemNotificacoes[0].total || 0);
     } catch (erro) {
       return next(erro);
     }
@@ -67,6 +78,7 @@ module.exports = async function (req, res, next) {
   }
 
   res.locals.usuario = usuario || null;
+  res.locals.usuarioLogado = usuario || null;
 
   if (rotasPublicas.has(req.path) || req.path.startsWith('/erro/')) {
     return next();

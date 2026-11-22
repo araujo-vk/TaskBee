@@ -42,7 +42,7 @@ module.exports = function (app) {
           FROM sla_tracking
           GROUP BY ticket_id, tenant_id
         ) st ON st.ticket_id = t.id AND st.tenant_id = t.tenant_id
-        WHERE t.tenant_id = ?${periodoSql.clausula}
+        WHERE t.tenant_id = ? AND t.deleted_at IS NULL${periodoSql.clausula}
       `;
 
       const [estatisticasResultado, porCategoriaResultado, porPrioridadeResultado] = await Promise.all([

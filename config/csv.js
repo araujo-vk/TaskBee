@@ -5,7 +5,8 @@ function normalizarCabecalho(valor) {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, '_');
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
 }
 
 function lerCsv(conteudo, separador = ';') {

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificações - TaskBee</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/notificacoes.css">
+    <link rel="shortcut icon" href="/TaskBee-Icon.ico">
+</head>
+<body>
+    <%- include('partials/header') %>
+    <main id="conteudo-principal" class="container-notificacoes">
+        <div class="cabecalho-notificacoes">
+            <div><h1>Notificações</h1><p>Acompanhe mudanças nos seus chamados.</p></div>
+            <form action="/notificacoes/ler-todas" method="POST"><button type="submit">Marcar todas como lidas</button></form>
+        </div>
+        <div class="lista-notificacoes">
+            <% if (notificacoes.length) { notificacoes.forEach(item => { %>
+                <article class="notificacao <%= item.is_read ? 'lida' : 'nao-lida' %>">
+                    <div><h2><%= item.title %></h2><p><%= item.message %></p><time><%= new Date(item.created_at).toLocaleString('pt-BR') %></time></div>
+                    <div class="acoes-notificacao">
+                        <% if (item.link_url && String(item.link_url).startsWith('/')) { %><a href="<%= item.link_url %>">Abrir</a><% } %>
+                        <% if (!item.is_read) { %><form action="/notificacoes/<%= item.id %>/ler" method="POST"><button type="submit">Marcar como lida</button></form><% } %>
+                    </div>
+                </article>
+            <% }); } else { %><p class="sem-notificacoes">Você não possui notificações.</p><% } %>
+        </div>
+    </main>
+    <%- include('partials/footer') %>
+</body>
+</html>

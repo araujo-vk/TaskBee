@@ -155,6 +155,13 @@
                 </tbody>
             </table>
         </div>
+
+        <% if (usuariosInativos && usuariosInativos.length) { %>
+            <h3 class="subtitulo-secao usuarios-inativos-titulo">Usuários Inativos</h3>
+            <div class="tabela-responsiva"><table class="tabela-chamados"><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Ação</th></tr></thead><tbody>
+                <% usuariosInativos.forEach(item => { %><tr><td><%= item.nome %></td><td><%= item.email %></td><td><%= item.role %></td><td><form action="/gestao-usuarios/reativar/<%= item.id %>" method="POST"><button class="btn-aceitar" type="submit">Reativar</button></form></td></tr><% }) %>
+            </tbody></table></div>
+        <% } %>
     </main>
 
     <%- include('partials/footer') %>

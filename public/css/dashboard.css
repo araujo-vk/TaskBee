@@ -6,6 +6,13 @@
     padding: 0 20px;
 }
 
+.barra-painel { display: flex; align-items: center; gap: 16px; margin-bottom: 26px; }
+.barra-painel form { display: flex; gap: 8px; flex: 1; }
+.barra-painel input { flex: 1; min-width: 0; padding: 11px 14px; border: 1px solid var(--borda-elemento); border-radius: 9px; background: var(--bg-cartao); color: var(--texto-principal); }
+.barra-painel button, .barra-painel > a { padding: 10px 15px; border: 0; border-radius: 9px; background: var(--cor-amarelo); color: #171717; font: 700 .85rem var(--fonte-principal); text-decoration: none; white-space: nowrap; }
+.barra-painel button { background: var(--bg-cartao); color: var(--texto-principal); border: 1px solid var(--borda-elemento); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
 .cabecalho-pagina {
     margin-bottom: 25px;
 }
@@ -95,7 +102,7 @@
     gap: 8px;
     border-left: 5px solid var(--borda-elemento, #cbd5e1);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    transition: all 0.25s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     height: 100%;
 }
 
@@ -338,6 +345,8 @@
 
 /* RESPONSIVIDADE MOBILE */
 @media (max-width: 768px) {
+    .barra-painel { flex-wrap: wrap; }
+    .barra-painel form { flex-basis: 100%; }
     .container-pagina {
         padding: 0 15px;
         margin: 20px auto;

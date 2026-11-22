@@ -51,7 +51,7 @@ module.exports = function (app) {
     const sortOrderPendentes = req.query.orderPendentes === 'asc' ? 'ASC' : 'DESC';
 
     try {
-      const [usuariosAtivos, usuariosPendentes] = await Promise.all([
+      const [usuariosAtivos, usuariosPendentes, usuariosInativos] = await Promise.all([
         req.db.query(`
           SELECT u.id, u.name AS nome, d.name AS departamento, r.name AS role, u.email, u.created_at AS dataCriacao
           FROM users u
@@ -67,6 +67,12 @@ module.exports = function (app) {
           LEFT JOIN roles r ON r.id = p.role_id
           WHERE p.tenant_id = ? AND p.status = 'pendente'
           ORDER BY ${sortFieldPendentes} ${sortOrderPendentes}
+        `, [tenantId]),
+        req.db.query(`
+          SELECT u.id, u.name AS nome, u.email, r.name AS role
+          FROM users u LEFT JOIN roles r ON r.id = u.role_id
+          WHERE u.tenant_id = ? AND u.is_active = FALSE
+          ORDER BY u.name
         `, [tenantId])
       ]);
 
@@ -74,6 +80,7 @@ module.exports = function (app) {
         tenantId,
         usuariosAtivos: usuariosAtivos[0],
         usuariosPendentes: usuariosPendentes[0],
+        usuariosInativos: usuariosInativos[0],
         sortAtivosAtual: req.query.sortAtivos || 'nome',
         orderAtivosAtual: sortOrderAtivos.toLowerCase(),
         sortPendentesAtual: req.query.sortPendentes || 'data',
@@ -336,6 +343,21 @@ module.exports = function (app) {
     } catch (erro) {
       console.error('Erro ao desativar usuário:', erro);
       return res.status(500).send('Erro ao desativar usuário.');
+    }
+  });
+
+  app.post('/gestao-usuarios/reativar/:id', async (req, res) => {
+    const usuarioLogado = req.session.usuarioLogado;
+    if (!validarGestor(usuarioLogado, res)) return;
+    try {
+      const [resultado] = await req.db.query(
+        'UPDATE users SET is_active = TRUE WHERE id = ? AND tenant_id = ? AND is_active = FALSE',
+        [req.params.id, usuarioLogado.tenantId]
+      );
+      if (!resultado.affectedRows) return res.redirect('/erro/404');
+      return redirecionarComMensagem(res, 'sucesso', 'Usuário reativado.');
+    } catch (erro) {
+      return redirecionarComMensagem(res, 'erro', 'Não foi possível reativar o usuário.');
     }
   });
 };

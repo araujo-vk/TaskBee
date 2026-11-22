@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS departments (
     id INT PRIMARY KEY AUTO_INCREMENT,
     tenant_id INT NOT NULL,
     name VARCHAR(100) NOT NULL,
+    UNIQUE KEY uq_departments_tenant_name (tenant_id, name),
     FOREIGN KEY (tenant_id) REFERENCES tenants(id)
 );
 
@@ -78,6 +79,13 @@ CREATE TABLE IF NOT EXISTS login_logs (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+CREATE TABLE IF NOT EXISTS user_sessions (
+    session_id VARCHAR(128) PRIMARY KEY,
+    session_data MEDIUMTEXT NOT NULL,
+    expires_at DATETIME NOT NULL,
+    INDEX idx_user_sessions_expires (expires_at)
+);
+
 CREATE TABLE IF NOT EXISTS ticket_categories (
     id INT PRIMARY KEY AUTO_INCREMENT,
     tenant_id INT NOT NULL,
@@ -92,13 +100,15 @@ CREATE TABLE IF NOT EXISTS priorities (
     tenant_id INT NOT NULL,
     name VARCHAR(50) NOT NULL, 
     weight INT NOT NULL,
+    UNIQUE KEY uq_priorities_tenant_name (tenant_id, name),
     FOREIGN KEY (tenant_id) REFERENCES tenants(id)
 );
 
 CREATE TABLE IF NOT EXISTS statuses (
     id INT PRIMARY KEY AUTO_INCREMENT,
     tenant_id INT NOT NULL,
-    name VARCHAR(50) NOT NULL, 
+    name VARCHAR(50) NOT NULL,
+    UNIQUE KEY uq_statuses_tenant_name (tenant_id, name),
     FOREIGN KEY (tenant_id) REFERENCES tenants(id)
 );
 
@@ -109,6 +119,7 @@ CREATE TABLE IF NOT EXISTS sla_policies (
     priority_id INT NOT NULL,
     response_time_minutes INT NOT NULL,
     resolution_time_minutes INT NOT NULL,
+    UNIQUE KEY uq_sla_tenant_priority (tenant_id, priority_id),
     FOREIGN KEY (tenant_id) REFERENCES tenants(id),
     FOREIGN KEY (priority_id) REFERENCES priorities(id)
 );
@@ -150,6 +161,9 @@ CREATE TABLE IF NOT EXISTS tickets (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP,
     closed_at DATETIME NULL,
+    deleted_at DATETIME NULL,
+    INDEX idx_tickets_tenant_created (tenant_id, created_at),
+    INDEX idx_tickets_tenant_status (tenant_id, status_id),
     FOREIGN KEY (tenant_id) REFERENCES tenants(id),
     FOREIGN KEY (category_id) REFERENCES ticket_categories(id),
     FOREIGN KEY (priority_id) REFERENCES priorities(id),
@@ -169,6 +183,7 @@ CREATE TABLE IF NOT EXISTS sla_tracking (
     responded_at DATETIME NULL,
     resolved_at DATETIME NULL,
     breached BOOLEAN DEFAULT FALSE,
+    UNIQUE KEY uq_sla_tracking_ticket (tenant_id, ticket_id),
     FOREIGN KEY (tenant_id) REFERENCES tenants(id),
     FOREIGN KEY (ticket_id) REFERENCES tickets(id),
     FOREIGN KEY (sla_policy_id) REFERENCES sla_policies(id)
@@ -192,6 +207,9 @@ CREATE TABLE IF NOT EXISTS ticket_attachments (
     tenant_id INT NOT NULL,
     ticket_id INT NOT NULL,
     file_path VARCHAR(255) NOT NULL,
+    original_name VARCHAR(255),
+    mime_type VARCHAR(100),
+    file_size INT,
     uploaded_by INT NOT NULL,
     uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (tenant_id) REFERENCES tenants(id),
@@ -384,6 +402,7 @@ TRUNCATE TABLE statuses;
 TRUNCATE TABLE priorities;
 TRUNCATE TABLE ticket_categories;
 TRUNCATE TABLE login_logs;
+TRUNCATE TABLE user_sessions;
 TRUNCATE TABLE password_reset_tokens;
 TRUNCATE TABLE pending_users;
 TRUNCATE TABLE users;
@@ -424,8 +443,8 @@ INSERT INTO users (id, tenant_id, name, email, password_hash, role_id, departmen
 
 -- 5. PENDING USERS
 INSERT INTO pending_users (id, tenant_id, name, email, password_hash, role_id, department_id, status) VALUES 
-(1, 1, 'Fernando Mendes', 'fernando.mendes@ignis.com', '123456', 4, 2, 'pendente'),
-(2, 2, 'João Pedro', 'joao@acme.com', '123456', 4, 5, 'pendente');
+(1, 1, 'Fernando Mendes', 'fernando.mendes@ignis.com', '$2b$10$Vn6sj2nk1YWqZahHSKx/7uSX3JmZFVmXDDHt9..JwvcxONa5v.Ec.', 4, 2, 'pendente'),
+(2, 2, 'João Pedro', 'joao@acme.com', '$2b$10$Vn6sj2nk1YWqZahHSKx/7uSX3JmZFVmXDDHt9..JwvcxONa5v.Ec.', 4, 5, 'pendente');
 
 -- 6. SECURITY & LOGS
 INSERT INTO password_reset_tokens (id, user_id, token, expires_at) VALUES 

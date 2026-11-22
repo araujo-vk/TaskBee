@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastros do sistema - TaskBee</title>
+    <link rel="stylesheet" href="/css/global.css"><link rel="stylesheet" href="/css/gestao-cadastros.css">
+    <link rel="shortcut icon" href="/TaskBee-Icon.ico">
+</head>
+<body>
+    <%- include('partials/header') %>
+    <main id="conteudo-principal" class="container-cadastros">
+        <header><h1>Cadastros do sistema</h1><p>Configure departamentos, classificação de chamados e catálogo de serviços.</p></header>
+        <% if (sucesso) { %><p class="feedback sucesso" role="status"><%= sucesso %></p><% } %>
+        <% if (erro) { %><p class="feedback erro" role="alert"><%= erro %></p><% } %>
+
+        <% const blocos = [
+            { titulo: 'Departamentos', rota: 'departamentos', itens: departamentos },
+            { titulo: 'Categorias de chamados', rota: 'categorias', itens: categorias },
+            { titulo: 'Status de chamados', rota: 'status', itens: status },
+            { titulo: 'Categorias de serviços', rota: 'categorias-servico', itens: categoriasServico }
+        ]; %>
+        <section class="grade-cadastros">
+            <% blocos.forEach(bloco => { %><article class="card-cadastro"><h2><%= bloco.titulo %></h2>
+                <form action="/gestao-cadastros/<%= bloco.rota %>" method="POST" class="form-novo"><input name="nome" maxlength="100" required placeholder="Novo nome"><button type="submit">Adicionar</button></form>
+                <div class="lista-cadastros"><% bloco.itens.forEach(item => { %><form action="/gestao-cadastros/<%= bloco.rota %>/<%= item.id %>/renomear" method="POST"><input name="nome" value="<%= item.name %>" required><button type="submit">Salvar</button></form><% }) %></div>
+            </article><% }) %>
+
+            <article class="card-cadastro"><h2>Prioridades</h2>
+                <form action="/gestao-cadastros/prioridades" method="POST" class="form-novo"><input name="nome" maxlength="50" required placeholder="Nome"><input type="number" name="peso" min="1" max="10" required placeholder="Peso"><button type="submit">Adicionar</button></form>
+                <ul><% prioridades.forEach(item => { %><li><span><%= item.name %></span><strong>Peso <%= item.weight %></strong></li><% }) %></ul>
+            </article>
+        </section>
+
+        <section class="card-cadastro servicos"><h2>Catálogo de serviços</h2>
+            <form action="/gestao-cadastros/servicos" method="POST" class="form-servico">
+                <label>Nome<input name="nome" maxlength="150" required></label><label>Categoria<select name="categoria_id"><option value="">Sem categoria</option><% categoriasServico.forEach(item => { %><option value="<%= item.id %>"><%= item.name %></option><% }) %></select></label>
+                <label>SLA padrão<select name="sla_id"><option value="">Conforme prioridade</option><% politicasSla.forEach(item => { %><option value="<%= item.id %>"><%= item.name %></option><% }) %></select></label>
+                <label class="descricao">Descrição<textarea name="descricao" rows="3"></textarea></label><button type="submit">Cadastrar serviço</button>
+            </form>
+            <div class="tabela-wrapper"><table><thead><tr><th>Serviço</th><th>Categoria</th><th>SLA</th><th>Situação</th><th>Ação</th></tr></thead><tbody><% servicos.forEach(item => { %><tr><td><strong><%= item.name %></strong><small><%= item.description || '' %></small></td><td><%= item.categoria || '—' %></td><td><%= item.sla || 'Por prioridade' %></td><td><%= item.is_active ? 'Ativo' : 'Inativo' %></td><td><form action="/gestao-cadastros/servicos/<%= item.id %>/alternar" method="POST"><button type="submit"><%= item.is_active ? 'Desativar' : 'Ativar' %></button></form></td></tr><% }) %></tbody></table></div>
+        </section>
+    </main>
+    <%- include('partials/footer') %>
+</body>
+</html>

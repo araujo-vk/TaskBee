@@ -34,6 +34,14 @@
     %>
 
     <main id="conteudo-principal" class="container-pagina">
+        <div class="barra-painel">
+            <form action="/chamados" method="GET" role="search">
+                <label class="sr-only" for="busca-painel">Buscar chamados</label>
+                <input id="busca-painel" type="search" name="busca" placeholder="Buscar chamados por título ou ID">
+                <button type="submit">Buscar</button>
+            </form>
+            <a href="/chamados/novo">Novo chamado</a>
+        </div>
         <div class="cabecalho-pagina cabecalho-dashboard">
             <div>
                 <h1>Painel de Controle</h1>

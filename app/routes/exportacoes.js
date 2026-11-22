@@ -41,7 +41,7 @@ module.exports = function (app) {
         LEFT JOIN ticket_categories c ON c.id = t.category_id AND c.tenant_id = t.tenant_id
         LEFT JOIN services srv ON srv.id = t.service_id AND srv.tenant_id = t.tenant_id
         LEFT JOIN sla_tracking st ON st.ticket_id = t.id AND st.tenant_id = t.tenant_id
-        WHERE t.tenant_id = ?
+        WHERE t.tenant_id = ? AND t.deleted_at IS NULL
         ORDER BY t.created_at DESC
       `, [usuario.tenantId]);
 
@@ -79,7 +79,7 @@ module.exports = function (app) {
         INNER JOIN tickets t ON t.id = st.ticket_id AND t.tenant_id = st.tenant_id
         LEFT JOIN priorities p ON p.id = t.priority_id AND p.tenant_id = t.tenant_id
         LEFT JOIN statuses s ON s.id = t.status_id AND s.tenant_id = t.tenant_id
-        WHERE st.tenant_id = ?
+        WHERE st.tenant_id = ? AND t.deleted_at IS NULL
         ORDER BY st.resolution_due_at ASC
       `, [usuario.tenantId]);
 

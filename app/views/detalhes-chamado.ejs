@@ -71,6 +71,11 @@
                     <button type="submit">Atualizar status</button>
                 </form>
             </section>
+            <% if ([1, 2].includes(Number(usuario.roleId))) { %>
+                <form action="/chamados/<%= chamado.id %>/excluir" method="POST" onsubmit="return confirm('Arquivar este chamado? Ele deixará de aparecer nas listagens, mas o histórico será preservado.');">
+                    <button type="submit" class="btn-arquivar">Arquivar chamado</button>
+                </form>
+            <% } %>
         <% } %>
 
         <section id="comentarios" class="secao-detalhe" aria-labelledby="titulo-comentarios">
@@ -102,11 +107,35 @@
 
         <section class="secao-detalhe" aria-labelledby="titulo-anexos">
             <h2 id="titulo-anexos">Anexos registrados</h2>
-            <% if (anexos && anexos.length) { %><ul class="lista-anexos"><% anexos.forEach(anexo => { %><li><strong><%= String(anexo.file_path || '').split(/[\\/]/).pop() || 'Arquivo' %></strong><span>Enviado por <%= anexo.enviado_por || 'usuário removido' %> em <%= new Date(anexo.uploaded_at).toLocaleString('pt-BR') %></span></li><% }) %></ul><% } else { %><p class="vazio">Nenhum anexo registrado.</p><% } %>
+            <% if (anexos && anexos.length) { %><ul class="lista-anexos"><% anexos.forEach(anexo => { %><li><a href="/chamados/<%= chamado.id %>/anexos/<%= anexo.id %>"><strong><%= anexo.original_name || String(anexo.file_path || '').split(/[\\/]/).pop() || 'Arquivo' %></strong></a><span>Enviado por <%= anexo.enviado_por || 'usuário removido' %> em <%= new Date(anexo.uploaded_at).toLocaleString('pt-BR') %><%= anexo.file_size ? ` · ${Math.ceil(anexo.file_size / 1024)} KB` : '' %></span></li><% }) %></ul><% } else { %><p class="vazio">Nenhum anexo registrado.</p><% } %>
+            <form id="form-anexo" class="form-comentario" action="/chamados/<%= chamado.id %>/anexos" method="POST">
+                <label for="arquivo_anexo">Adicionar anexo — PNG, JPG, PDF ou TXT, até 2 MB</label>
+                <input id="arquivo_anexo" type="file" accept=".png,.jpg,.jpeg,.pdf,.txt" required>
+                <input type="hidden" name="arquivo_nome" id="arquivo_nome">
+                <textarea name="arquivo_base64" id="arquivo_base64" hidden required></textarea>
+                <button type="submit">Enviar anexo</button>
+            </form>
         </section>
 
         <a href="/chamados" class="link-voltar">← Voltar para a lista</a>
     </main>
     <%- include('partials/footer') %>
+    <script>
+        document.getElementById('form-anexo').addEventListener('submit', function (evento) {
+            const arquivo = document.getElementById('arquivo_anexo').files[0];
+            const destino = document.getElementById('arquivo_base64');
+            if (!arquivo || destino.value) return;
+            evento.preventDefault();
+            if (arquivo.size > 2 * 1024 * 1024) return window.alert('O arquivo deve ter no máximo 2 MB.');
+            const leitor = new FileReader();
+            leitor.onload = () => {
+                document.getElementById('arquivo_nome').value = arquivo.name;
+                destino.value = leitor.result;
+                this.submit();
+            };
+            leitor.onerror = () => window.alert('Não foi possível ler o arquivo.');
+            leitor.readAsDataURL(arquivo);
+        });
+    </script>
 </body>
 </html>

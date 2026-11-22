@@ -1,9 +1,19 @@
 <!-- views/partials/header.ejs -->
 <link rel="stylesheet" href="/css/header.css">
+<script>
+    (function () {
+        const saved = '<%= (locals.usuarioLogado && locals.usuarioLogado.tema) ? locals.usuarioLogado.tema : "" %>';
+        const local = localStorage.getItem('tema') || 'system';
+        const choice = ['light', 'dark'].includes(saved) ? saved : local;
+        const dark = choice === 'dark' || (choice === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark-mode', dark);
+        document.documentElement.dataset.themeChoice = choice;
+    })();
+</script>
 
-<header class="site-header">
+<header class="site-header <%= locals.usuarioLogado ? 'site-header--app' : 'site-header--public' %>">
     <div class="logo">
-        <a href="/"><img src="/TaskBee-logo.png" alt="TaskBee"></a>
+        <a href="/"><img src="/TaskBee-Logo.png" alt="TaskBee"></a>
     </div>
     
     <!-- Botão Hambúrguer (exibido apenas no mobile) -->
@@ -12,11 +22,14 @@
     </button>
     
     <nav class="nav-links" id="navLinks">
-        <% if (usuario) { %>
-            <% const roleId = Number(usuario.roleId); %>
-            <span class="saudacao">Olá, <%= usuario.nome || usuario.name %>!</span>
+        <% if (locals.usuarioLogado) { %>
+            <% const roleId = Number(locals.usuarioLogado.roleId); %>
+            <span class="saudacao">Olá, <%= locals.usuarioLogado.nome || locals.usuarioLogado.name %>!</span>
             <a href="/chamados">Meus Chamados</a>
             <a href="/chamados/novo">Novo Chamado</a>
+            <a href="/catalogo-servicos">Catálogo</a>
+            <a href="/base-de-conhecimento">Conhecimento</a>
+            <a href="/notificacoes">Notificações<% if (locals.notificacoesNaoLidas) { %> (<%= locals.notificacoesNaoLidas %>)<% } %></a>
 
             <% if ([1, 2, 3].includes(roleId)) { %>
                 <a href="/dashboard">Dashboard</a>
@@ -24,6 +37,7 @@
 
             <% if ([1, 2].includes(roleId)) { %>
                 <a href="/gestao-usuarios">Gestão de Usuários</a>
+                <a href="/gestao-cadastros">Cadastros</a>
                 <a href="/gestao-sla">SLA</a>
                 <a href="/logs">Logs</a>
             <% } %>
@@ -33,19 +47,64 @@
             <% } %>
 
             <a href="/IA">AskBee</a>
+            <a href="/configuracoes-user">Configurações</a>
             
-            <a href="/logout" class="btn-logout">Sair</a>
+            <form action="/logout" method="POST" class="form-logout">
+                <button type="submit" class="btn-logout">Sair</button>
+            </form>
         <% } else { %>
             <a href="/login">Entrar</a>
             <a href="/cadastro">Cadastrar</a>
             <a href="/cadastro-empresa" class="btn-destaque">Cadastrar Empresa</a>
         <% } %>
+        <div class="theme-switch" role="group" aria-label="Aparência">
+            <button type="button" data-theme="light" title="Modo claro" aria-label="Ativar modo claro">☀</button>
+            <button type="button" data-theme="dark" title="Modo escuro" aria-label="Ativar modo escuro">☾</button>
+            <button type="button" data-theme="system" title="Usar preferência do dispositivo" aria-label="Usar preferência do dispositivo">Auto</button>
+        </div>
     </nav>
 </header>
 
 <script>
+    const csrfToken = '<%= locals.csrfToken || "" %>';
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const navLinks = document.getElementById('navLinks');
+    document.querySelectorAll('.nav-links a[href]').forEach(link => {
+        const target = link.getAttribute('href');
+        if (target !== '/' && (location.pathname === target || location.pathname.startsWith(target + '/'))) {
+            link.setAttribute('aria-current', 'page');
+        }
+    });
+
+    function syncThemeButtons() {
+        document.querySelectorAll('.theme-switch [data-theme]').forEach(button => {
+            button.setAttribute('aria-pressed', button.dataset.theme === document.documentElement.dataset.themeChoice);
+        });
+    }
+    syncThemeButtons();
+    document.querySelectorAll('.theme-switch [data-theme]').forEach(button => {
+        button.addEventListener('click', async () => {
+            const theme = button.dataset.theme;
+            localStorage.setItem('tema', theme);
+            document.documentElement.dataset.themeChoice = theme;
+            document.documentElement.classList.toggle('dark-mode', theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches));
+            syncThemeButtons();
+            <% if (locals.usuarioLogado) { %>
+            try {
+                await fetch('/api/atualizar-tema', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrfToken },
+                    body: JSON.stringify({ tema: theme })
+                });
+            } catch (error) { console.error('Não foi possível salvar o tema.', error); }
+            <% } %>
+        });
+    });
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+        if (document.documentElement.dataset.themeChoice === 'system') {
+            document.documentElement.classList.toggle('dark-mode', event.matches);
+        }
+    });
 
     hamburgerBtn.addEventListener('click', () => {
         navLinks.classList.toggle('ativo');
@@ -58,5 +117,17 @@
             hamburgerBtn.setAttribute('aria-expanded', 'false');
             hamburgerBtn.focus();
         }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('form[method="POST"], form[method="post"]').forEach((form) => {
+            if (!form.querySelector('input[name="_csrf"]')) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = '_csrf';
+                input.value = csrfToken;
+                form.appendChild(input);
+            }
+        });
     });
 </script>

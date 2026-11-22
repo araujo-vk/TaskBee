@@ -1,0 +1,12 @@
+.container-cadastros { width: min(1200px, 94%); margin: 36px auto; }
+.container-cadastros > header p { color: var(--texto-secundario); }
+.feedback { padding: 12px; border-radius: 8px; }.feedback.sucesso { background: #d1fae5; color: #065f46; }.feedback.erro { background: #fee2e2; color: #991b1b; }
+.grade-cadastros { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.card-cadastro { margin-bottom: 20px; padding: 20px; border: 1px solid var(--borda-elemento); border-radius: 11px; background: var(--bg-cartao); }
+.card-cadastro h2 { margin-top: 0; font-size: 1.1rem; }.form-novo, .lista-cadastros form { display: flex; gap: 8px; margin-bottom: 8px; }
+.card-cadastro input, .card-cadastro select, .card-cadastro textarea { min-width: 0; width: 100%; padding: 9px; border: 1px solid var(--borda-elemento); border-radius: 7px; background: var(--bg-input); color: var(--texto-principal); }
+.card-cadastro button { padding: 9px 12px; border: 0; border-radius: 7px; background: var(--cor-laranja); color: white; font-weight: 700; }
+.card-cadastro ul { padding: 0; list-style: none; }.card-cadastro li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--borda-elemento); }
+.form-servico { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; align-items: end; }.form-servico label { display: grid; gap: 5px; }.form-servico .descricao { grid-column: 1 / -1; }
+.tabela-wrapper { overflow-x: auto; margin-top: 20px; }.card-cadastro table { width: 100%; border-collapse: collapse; }.card-cadastro th, .card-cadastro td { padding: 11px; border-bottom: 1px solid var(--borda-elemento); text-align: left; }.card-cadastro td small { display: block; color: var(--texto-secundario); margin-top: 4px; }
+@media (max-width: 760px) { .grade-cadastros, .form-servico { grid-template-columns: 1fr; } }

@@ -52,37 +52,48 @@
             </div>
         </div>
 
+        <form class="filtros-chamados" action="/chamados" method="GET">
+            <label>Buscar <input type="search" name="busca" value="<%= filtros.busca %>" placeholder="ID, título ou descrição"></label>
+            <label>Status <select name="status_id"><option value="">Todos</option><% status.forEach(item => { %><option value="<%= item.id %>" <%= Number(filtros.statusId) === Number(item.id) ? 'selected' : '' %>><%= item.name %></option><% }) %></select></label>
+            <label>Prioridade <select name="prioridade_id"><option value="">Todas</option><% prioridades.forEach(item => { %><option value="<%= item.id %>" <%= Number(filtros.prioridadeId) === Number(item.id) ? 'selected' : '' %>><%= item.name %></option><% }) %></select></label>
+            <label>Categoria <select name="categoria_id"><option value="">Todas</option><% categorias.forEach(item => { %><option value="<%= item.id %>" <%= Number(filtros.categoriaId) === Number(item.id) ? 'selected' : '' %>><%= item.name %></option><% }) %></select></label>
+            <button type="submit">Filtrar</button>
+            <a href="/chamados">Limpar</a>
+        </form>
+
         <div class="tabela-responsiva">
             <table class="tabela-chamados">
                 <thead>
                     <tr>
                         <th>
-                            <a href="/chamados?sort=id&order=<%= sortAtual === 'id' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                            <a href="/chamados?sort=id&order=<%= sortAtual === 'id' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>&<%= queryBase %>">
                                 ID <%= sortAtual === 'id' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
                             </a>
                         </th>
                         <th>
-                            <a href="/chamados?sort=nome&order=<%= sortAtual === 'nome' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                            <a href="/chamados?sort=nome&order=<%= sortAtual === 'nome' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>&<%= queryBase %>">
                                 Título <%= sortAtual === 'nome' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
                             </a>
                         </th>
                         <th>
-                            <a href="/chamados?sort=solicitante&order=<%= sortAtual === 'solicitante' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                            <a href="/chamados?sort=solicitante&order=<%= sortAtual === 'solicitante' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>&<%= queryBase %>">
                                 Solicitante <%= sortAtual === 'solicitante' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
                             </a>
                         </th>
                         <th>
-                            <a href="/chamados?sort=tipo&order=<%= sortAtual === 'tipo' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                            <a href="/chamados?sort=tipo&order=<%= sortAtual === 'tipo' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>&<%= queryBase %>">
                                 Tipo <%= sortAtual === 'tipo' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
                             </a>
                         </th>
+                        <th>Categoria</th>
+                        <th>Prioridade</th>
                         <th>
-                            <a href="/chamados?sort=status&order=<%= sortAtual === 'status' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                            <a href="/chamados?sort=status&order=<%= sortAtual === 'status' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>&<%= queryBase %>">
                                 Estado <%= sortAtual === 'status' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
                             </a>
                         </th>
                         <th>
-                            <a href="/chamados?sort=data&order=<%= sortAtual === 'data' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>">
+                            <a href="/chamados?sort=data&order=<%= sortAtual === 'data' && ordemAtual === 'ASC' ? 'desc' : 'asc' %>&<%= queryBase %>">
                                 Data <%= sortAtual === 'data' ? (ordemAtual === 'ASC' ? '▲' : '▼') : '' %>
                             </a>
                         </th>
@@ -92,7 +103,7 @@
                 <tbody>
                     <% if (chamados.length === 0) { %>
                         <tr>
-                            <td colspan="7" style="text-align: center; padding: 30px;">Nenhum chamado encontrado.</td>
+                            <td colspan="9" style="text-align: center; padding: 30px;">Nenhum chamado encontrado.</td>
                         </tr>
                     <% } else { %>
                         <% chamados.forEach(c => { %>
@@ -101,6 +112,8 @@
                                 <td><strong><%= c.titulo %></strong></td>
                                 <td><%= c.solicitante %></td>
                                 <td><%= c.tipo %></td>
+                                <td><%= c.categoria || '—' %></td>
+                                <td><%= c.prioridade || '—' %></td>
                                 <td><%= c.status %></td>
                                 <td><%= new Date(c.dataCriacao).toLocaleDateString('pt-BR') %></td>
                                 <td><a href="/chamados/<%= c.id %>" class="link-detalhes">Ver Detalhes</a></td>
@@ -110,6 +123,7 @@
                 </tbody>
             </table>
         </div>
+        <% if (totalPaginas > 1) { %><nav class="paginacao" aria-label="Paginação"><% for (let p = 1; p <= totalPaginas; p += 1) { %><a href="/chamados?pagina=<%= p %>&sort=<%= sortAtual %>&order=<%= ordemAtual.toLowerCase() %>&<%= queryBase %>" class="<%= p === paginaAtual ? 'ativo' : '' %>"><%= p %></a><% } %></nav><% } %>
     </main>
 
     <%- include('partials/footer') %>

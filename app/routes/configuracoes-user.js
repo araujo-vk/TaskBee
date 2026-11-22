@@ -54,22 +54,30 @@ module.exports = function (app) {
       const { nome, email, senha, 'confirmar-senha': confirmarSenha } = request.body;
       const tenantId = request.session.usuarioLogado.tenantId;
 
+      if (!String(nome || '').trim() || !/^\S+@\S+\.\S+$/.test(String(email || '').trim())) {
+        return response.redirect('/configuracoes-user?erro=Nome ou e-mail inválido.');
+      }
+
       let sql = `UPDATE users SET name = ?, email = ? WHERE id = ? AND tenant_id = ?`;
-      let params = [nome, email, userId, tenantId];
+      let params = [String(nome).trim(), String(email).trim().toLowerCase(), userId, tenantId];
 
       if (senha || confirmarSenha) {
         if (senha !== confirmarSenha) {
           return response.redirect("/configuracoes-user?erro=As senhas não coincidem. Nenhuma alteração foi salva.");
         }
+        if (senha && senha.length < 8) {
+          return response.redirect('/configuracoes-user?erro=A senha deve ter pelo menos 8 caracteres.');
+        }
         
         if (senha.trim() !== "") {
           const passwordHash = await bcrypt.hash(senha, 10);
           sql = `UPDATE users SET name = ?, email = ?, password_hash = ? WHERE id = ? AND tenant_id = ?`;
-          params = [nome, email, passwordHash, userId, tenantId];
+          params = [String(nome).trim(), String(email).trim().toLowerCase(), passwordHash, userId, tenantId];
         }
       }
 
       await request.db.query(sql, params);
+      request.session.usuarioLogado.nome = String(nome).trim();
       response.redirect("/configuracoes-user?sucesso=Dados atualizados com sucesso!");
       
     } catch (error) {

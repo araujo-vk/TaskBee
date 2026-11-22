@@ -2,6 +2,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
 
 :root {
+    color-scheme: light;
+    --largura-sidebar: 226px;
+    --bg-header: #ffffff;
+    --bg-footer: #f1f2f4;
+    --bg-hover: #f2f3f5;
+    --sombra-suave: 0 2px 12px rgba(10, 10, 10, .07);
     /* --- CORES DA MARCA (Imutáveis) --- */
     --cor-amarelo: #fadc21; 
     --cor-laranja: #f97316; 
@@ -23,6 +29,11 @@
 
 /* --- MODO ESCURO --- */
 :root.dark-mode, body.dark-mode {
+    color-scheme: dark;
+    --bg-header: #1b1b1f;
+    --bg-footer: #19191c;
+    --bg-hover: #303036;
+    --sombra-suave: 0 2px 14px rgba(0, 0, 0, .25);
     --bg-site: #121214;       
     --bg-cartao: #202024;     
     --texto-principal: #f8fafc; 
@@ -50,6 +61,45 @@ body {
     min-height: 100vh;
     line-height: 1.5;
 }
+
+body:has(> .site-header--app) { background: var(--bg-site); }
+body:has(> .site-header--app) > main { min-width: 0; }
+body:has(> .site-header--app) > .site-footer { margin-top: auto; }
+
+main h1, main h2, main h3, main h4 { color: var(--texto-principal); }
+main p, main li, main td, main label { overflow-wrap: anywhere; }
+main input:not([type="checkbox"]):not([type="radio"]), main select, main textarea {
+    max-width: 100%; background-color: var(--bg-input); color: var(--texto-principal);
+}
+main table { max-width: 100%; }
+
+/* Componentes compartilhados para páginas antigas e novas. */
+:root.dark-mode .tag-role, :root.dark-mode .tag-status, :root.dark-mode .tag-prioridade,
+:root.dark-mode .mensagem-feedback, :root.dark-mode .feedback-msg, :root.dark-mode .mensagem-alerta {
+    color: var(--texto-principal);
+}
+:root.dark-mode .container, :root.dark-mode .container-form, :root.dark-mode .conteudo-chamados,
+:root.dark-mode .container-detalhes, :root.dark-mode .secao-card, :root.dark-mode .grafico-card,
+:root.dark-mode .card-cadastro, :root.dark-mode .servico-card, :root.dark-mode .kb-editor,
+:root.dark-mode .kb-artigos article, :root.dark-mode .notificacao,
+:root.dark-mode .perfil-card, :root.dark-mode .form-card, :root.dark-mode .hero-container {
+    background-color: var(--bg-cartao); color: var(--texto-principal); border-color: var(--borda-elemento);
+}
+:root.dark-mode .tabela-chamados th, :root.dark-mode .tabela-padrao th { background-color: var(--bg-input); color: var(--texto-principal); }
+:root.dark-mode .tabela-chamados td, :root.dark-mode .tabela-padrao td { color: var(--texto-secundario); border-color: var(--borda-elemento); }
+:root.dark-mode .tabela-chamados tbody tr:hover { background-color: var(--bg-hover); }
+:root.dark-mode .abelha-badge { background: rgba(250, 220, 33, .12); color: var(--texto-principal); }
+:root.dark-mode .feedback.sucesso, :root.dark-mode .feedback.erro { color: var(--texto-principal); }
+:root.dark-mode .badge-tenant, :root.dark-mode .tag-estado { background: var(--bg-input); color: var(--texto-principal); }
+
+.pagina-pendente {
+    width: min(900px, calc(100% - 32px)); margin: 40px auto; padding: clamp(22px, 4vw, 42px);
+    background: var(--bg-cartao); border: 1px solid var(--borda-elemento); border-radius: 14px;
+    box-shadow: var(--sombra-suave);
+}
+.pagina-pendente h1 { margin-top: 0; }
+.pagina-pendente p { color: var(--texto-secundario); }
+.pagina-pendente a { color: var(--cor-laranja); }
 
 button,
 input,

@@ -45,11 +45,14 @@
         <!-- Formulário de Cadastro de Ativo -->
         <section class="secao-card">
             <h2>Cadastrar Novo Ativo</h2>
+            <form action="/gestao-ativos/tipos" method="POST" class="form-tipo-ativo"><label>Novo tipo de ativo <input name="nome" maxlength="100" required placeholder="Ex: Notebook"></label><button type="submit" class="btn-primario">Adicionar tipo</button></form>
             <form action="/gestao-ativos/cadastrar" method="POST" class="form-grid">
                 <div class="form-group">
                     <label for="nome">Nome do Ativo</label>
                     <input type="text" id="nome" name="nome" placeholder="Ex: Notebook Dell Vostro" required>
                 </div>
+
+                <div class="form-group"><label for="tipo_id">Tipo</label><select id="tipo_id" name="tipo_id"><option value="">Não definido</option><% tipos.forEach(tipo => { %><option value="<%= tipo.id %>"><%= tipo.name %></option><% }) %></select></div>
 
                 <div class="form-group">
                     <label for="categoria">Categoria</label>
@@ -60,6 +63,9 @@
                         <option value="periferico">Periférico</option>
                     </select>
                 </div>
+
+                <div class="form-group"><label for="responsavel_id">Responsável</label><select id="responsavel_id" name="responsavel_id"><option value="">Não atribuído</option><% usuarios.forEach(item => { %><option value="<%= item.id %>"><%= item.name %></option><% }) %></select></div>
+                <div class="form-group"><label for="data_aquisicao">Data de aquisição</label><input type="date" id="data_aquisicao" name="data_aquisicao"></div>
 
                 <div class="form-group">
                     <label for="status">Status</label>
@@ -92,7 +98,9 @@
                             <th>ID</th>
                             <th>Nome</th>
                             <th>Categoria</th>
+                            <th>Tipo</th>
                             <th>Nº de Série</th>
+                            <th>Responsável</th>
                             <th>Status</th>
                             <th>Data de Registro</th>
                         </tr>
@@ -104,18 +112,20 @@
                                     <td><strong>#<%= ativo.id %></strong></td>
                                     <td><%= ativo.name %></td>
                                     <td class="coluna-capitalizada"><%= ativo.category %></td>
+                                    <td><%= ativo.tipo || 'N/A' %></td>
                                     <td><code><%= ativo.serial_number || 'N/A' %></code></td>
+                                    <td><%= ativo.responsavel || 'Não atribuído' %></td>
                                     <td>
                                         <span class="tag-status ativo-<%= (ativo.status || '').toLowerCase() %>">
                                             <%= ativo.status %>
                                         </span>
                                     </td>
-                                    <td><%= new Date(ativo.created_at).toLocaleDateString('pt-BR') %></td>
+                                    <td><%= ativo.acquired_at ? new Date(ativo.acquired_at).toLocaleDateString('pt-BR') : 'Não informada' %></td>
                                 </tr>
                             <% }); %>
                         <% } else { %>
                             <tr>
-                                <td colspan="6" class="sem-dados">Nenhum ativo cadastrado até o momento.</td>
+                                <td colspan="8" class="sem-dados">Nenhum ativo cadastrado até o momento.</td>
                             </tr>
                         <% } %>
                     </tbody>

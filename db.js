@@ -1,15 +1,16 @@
-// db.js
+require('./config/env');
 const mysql = require('mysql2/promise');
 
-// Cria um "pool" de conexões (mais eficiente que abrir e fechar a conexão toda hora)
 const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root', // Substitua pelo seu usuário do MySQL local
-  password: '9705Veno#', // Substitua pela sua senha do MySQL local
-  database: 'banco', // O nome do banco que você criou no seu arquivo .sql
+  host: process.env.DB_HOST || 'localhost',
+  port: Number(process.env.DB_PORT || 3306),
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'banco',
   waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+  connectionLimit: Number(process.env.DB_CONNECTION_LIMIT || 10),
+  queueLimit: 0,
+  timezone: 'Z'
 });
 
 module.exports = pool;

@@ -1,9 +1,12 @@
-// app.js
+require('./config/env');
 var app = require('./config/express')();
 const express = require('express');
+const db = require('./db');
 const bancoMiddleware = require('./config/bancoMiddleware');
 const authMiddleware = require('./config/authMiddleware');
 const session = require('express-session');
+const MySqlSessionStore = require('./config/mysqlSessionStore');
+const { cabecalhosSeguranca, protegerRequisicoes } = require('./config/securityMiddleware');
 const sessionSecret = process.env.SESSION_SECRET
   || (process.env.NODE_ENV === 'production' ? null : 'taskbee-local-development-secret');
 
@@ -16,11 +19,13 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // 1. Middlewares de requisição
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '4mb' }));
 app.use(express.json());
+app.use(cabecalhosSeguranca);
 
 // 2. SESSÃO VEM ANTES DA AUTENTICAÇÃO!
 app.use(session({
+  store: new MySqlSessionStore(db),
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
@@ -31,6 +36,7 @@ app.use(session({
     secure: process.env.NODE_ENV === 'production'
   }
 }));
+app.use(protegerRequisicoes);
 
 // ... (Seus outros imports e configurações iniciais)
 
@@ -73,6 +79,17 @@ fs.readdirSync(routesPath)
 // Rotas de fallback e tratamento de erros precisam ser registradas após as rotas da aplicação.
 require(path.join(routesPath, 'error.js'))(app);
 
-app.listen(3000, function () {
-  console.log("Servidor Rodando!");
+const porta = Number(process.env.PORT || 3000);
+const servidor = app.listen(porta, function () {
+  console.log(`Servidor Rodando na porta ${porta}!`);
 });
+
+async function encerrarServidor() {
+  servidor.close(async () => {
+    await db.end();
+    process.exit(0);
+  });
+}
+
+process.on('SIGINT', encerrarServidor);
+process.on('SIGTERM', encerrarServidor);

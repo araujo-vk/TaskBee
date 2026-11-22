@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const { estaBloqueado, registrarFalha, limpar } = require('../../config/loginRateLimiter');
 
 module.exports = function (app) {
   
@@ -8,12 +9,18 @@ module.exports = function (app) {
 
   app.post("/login", async function (req, res) {
     const { cnpj_empresa, email, senha } = req.body;
+    const identificador = `${cnpj_empresa}:${email}`;
+
+    if (estaBloqueado(req, identificador)) {
+      return res.status(429).render('login', { erro: 'Muitas tentativas. Aguarde 15 minutos e tente novamente.' });
+    }
 
     try {
       // 1. Busca a empresa pelo CNPJ
       const [empresa] = await req.db.query("SELECT id FROM tenants WHERE cnpj = ?", [cnpj_empresa]);
       
       if (empresa.length === 0) {
+        registrarFalha(req, identificador);
         return res.render("login", { erro: "Empresa não encontrada." });
       }
 
@@ -25,6 +32,7 @@ module.exports = function (app) {
       );
 
       if (usuario.length === 0) {
+        registrarFalha(req, identificador);
         return res.render("login", { erro: "Email ou senha incorretos." });
       }
 
@@ -32,8 +40,19 @@ module.exports = function (app) {
       const senhaValida = await bcrypt.compare(senha, usuario[0].password_hash);
 
       if (!senhaValida) {
+        registrarFalha(req, identificador);
+        await req.db.query(
+          'INSERT INTO login_logs (user_id, ip_address, success) VALUES (?, ?, FALSE)',
+          [usuario[0].id, req.ip]
+        );
         return res.render("login", { erro: "Email ou senha incorretos." });
       }
+
+      limpar(req, identificador);
+      await req.db.query(
+        'INSERT INTO login_logs (user_id, ip_address, success) VALUES (?, ?, TRUE)',
+        [usuario[0].id, req.ip]
+      );
 
       // Regenera o identificador da sessão após o login e usa um formato único.
       req.session.regenerate((erroSessao) => {
@@ -74,7 +93,7 @@ module.exports = function (app) {
   });
 
   // Rota para sair do sistema (Logout)
-  app.get("/logout", function (req, res) {
+  function logout(req, res) {
     req.session.destroy((erro) => {
       if (erro) {
         console.error("Erro ao encerrar sessão:", erro);
@@ -83,5 +102,8 @@ module.exports = function (app) {
       res.clearCookie('connect.sid');
       res.redirect("/login");
     });
-  });
+  }
+
+  app.post('/logout', logout);
+  app.get('/logout', logout);
 };

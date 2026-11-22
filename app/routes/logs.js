@@ -13,7 +13,7 @@ module.exports = function (app) {
       const [logs] = await req.db.query(
         `SELECT a.action, a.entity, a.details, a.created_at, u.name AS responsavel 
          FROM audit_logs a
-         LEFT JOIN users u ON u.id = a.user_id
+         LEFT JOIN users u ON u.id = a.user_id AND u.tenant_id = a.tenant_id
          WHERE a.tenant_id = ? 
          ORDER BY a.created_at DESC`,
         [usuario.tenantId]

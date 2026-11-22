@@ -207,3 +207,4 @@ code {
         padding: 15px;
     }
 }
+.form-tipo-ativo { display:flex; gap:10px; align-items:end; margin-bottom:18px; padding-bottom:18px; border-bottom:1px solid var(--borda-elemento); }.form-tipo-ativo label { flex:1; display:grid; gap:5px; }.form-tipo-ativo input { padding:9px; border:1px solid var(--borda-elemento); border-radius:7px; background:var(--bg-input); color:var(--texto-principal); }

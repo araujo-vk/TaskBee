@@ -49,21 +49,21 @@
                 <div class="form-group">
                     <label for="prioridade">Nível de Prioridade</label>
                     <select id="prioridade" name="prioridade" required>
-                        <option value="Baixa">Baixa</option>
-                        <option value="Média">Média</option>
-                        <option value="Alta">Alta</option>
-                        <option value="Crítica">Crítica</option>
+                        <option value="">Selecione uma prioridade</option>
+                        <% (prioridades || []).forEach(prioridade => { %>
+                            <option value="<%= prioridade.id %>"><%= prioridade.name %></option>
+                        <% }) %>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="tempo_resposta">Primeira Resposta (Horas)</label>
-                    <input type="number" id="tempo_resposta" name="tempo_resposta" min="1" required placeholder="Ex: 4">
+                    <input type="number" id="tempo_resposta" name="tempo_resposta" min="0.25" step="0.25" required placeholder="Ex: 0,25">
                 </div>
 
                 <div class="form-group">
                     <label for="tempo_resolucao">Solução Definitiva (Horas)</label>
-                    <input type="number" id="tempo_resolucao" name="tempo_resolucao" min="1" required placeholder="Ex: 24">
+                    <input type="number" id="tempo_resolucao" name="tempo_resolucao" min="0.25" step="0.25" required placeholder="Ex: 24">
                 </div>
 
                 <div class="form-acoes">

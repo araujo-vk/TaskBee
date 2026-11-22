@@ -51,7 +51,21 @@
             <p><strong>Título:</strong> <%= chamado.title %></p>
             <p><strong>Solicitante:</strong> <%= chamado.solicitante %> (<%= chamado.email_solicitante %>)</p>
             <p><strong>Tipo:</strong> <%= chamado.type %></p>
+            <p><strong>Categoria:</strong> <%= chamado.categoria || 'Não definida' %></p>
+            <p><strong>Prioridade:</strong> <%= chamado.prioridade || 'Não definida' %></p>
+            <p><strong>Serviço:</strong> <%= chamado.servico || 'Não definido' %></p>
+            <p><strong>Responsável:</strong> <%= chamado.tecnico || 'Ainda não atribuído' %></p>
             <p><strong>Abertura:</strong> <%= new Date(chamado.created_at).toLocaleString('pt-PT') %></p>
+        </div>
+
+        <div class="info-grid">
+            <p><strong>Resposta até:</strong>
+                <%= chamado.response_due_at ? new Date(chamado.response_due_at).toLocaleString('pt-PT') : 'SLA não configurado' %>
+            </p>
+            <p><strong>Resolução até:</strong>
+                <%= chamado.resolution_due_at ? new Date(chamado.resolution_due_at).toLocaleString('pt-PT') : 'SLA não configurado' %>
+            </p>
+            <p><strong>SLA:</strong> <%= chamado.breached ? 'Violado' : (chamado.resolved_at ? 'Cumprido' : 'Em acompanhamento') %></p>
         </div>
 
         <div class="descricao-box">
@@ -64,10 +78,11 @@
                 <h3>Atualizar Estado</h3>
                 <form action="/chamados/<%= chamado.id %>/status" method="POST">
                     <select name="status_id" id="status_id" required>
-                        <option value="1" <%= chamado.status_id == 1 ? 'selected' : '' %>>Aberto</option>
-                        <option value="2" <%= chamado.status_id == 2 ? 'selected' : '' %>>Em Andamento</option>
-                        <option value="3" <%= chamado.status_id == 3 ? 'selected' : '' %>>Resolvido</option>
-                        <option value="4" <%= chamado.status_id == 4 ? 'selected' : '' %>>Fechado</option>
+                        <% (status || []).forEach(item => { %>
+                            <option value="<%= item.id %>" <%= Number(chamado.status_id) === Number(item.id) ? 'selected' : '' %>>
+                                <%= item.name %>
+                            </option>
+                        <% }) %>
                     </select>
                     <button type="submit">Atualizar</button>
                 </form>

@@ -43,20 +43,51 @@
     
     <main class="container-form">
         <h2>Abrir Novo Chamado</h2>
+        <% const dados = locals.valores || {}; %>
         <form action="/chamados/novo" method="POST">
             <label for="titulo">Título do Chamado:</label>
-            <input type="text" id="titulo" name="titulo" required>
+            <input type="text" id="titulo" name="titulo" maxlength="200" value="<%= dados.titulo || '' %>" required>
 
             <label for="descricao">Descrição:</label>
-            <textarea id="descricao" name="descricao" rows="5" required></textarea>
+            <textarea id="descricao" name="descricao" rows="5" required><%= dados.descricao || '' %></textarea>
 
             <label for="tipo">Tipo de Chamado:</label>
             <select id="tipo" name="tipo" required>
-                <option value="incidente">Incidente</option>
-                <option value="requisicao">Requisição</option>
-                <option value="problema">Problema</option>
-                <option value="mudanca">Mudança</option>
-                <option value="outro">Outro</option>
+                <option value="incidente" <%= dados.tipo === 'incidente' ? 'selected' : '' %>>Incidente</option>
+                <option value="requisicao" <%= dados.tipo === 'requisicao' ? 'selected' : '' %>>Requisição</option>
+                <option value="problema" <%= dados.tipo === 'problema' ? 'selected' : '' %>>Problema</option>
+                <option value="mudanca" <%= dados.tipo === 'mudanca' ? 'selected' : '' %>>Mudança</option>
+                <option value="outro" <%= dados.tipo === 'outro' ? 'selected' : '' %>>Outro</option>
+            </select>
+
+            <label for="category_id">Categoria:</label>
+            <select id="category_id" name="category_id" required>
+                <option value="">Selecione uma categoria</option>
+                <% (categorias || []).forEach(categoria => { %>
+                    <option value="<%= categoria.id %>" <%= Number(dados.categoryId) === Number(categoria.id) ? 'selected' : '' %>>
+                        <%= categoria.name %>
+                    </option>
+                <% }) %>
+            </select>
+
+            <label for="priority_id">Prioridade:</label>
+            <select id="priority_id" name="priority_id" required>
+                <option value="">Selecione uma prioridade</option>
+                <% (prioridades || []).forEach(prioridade => { %>
+                    <option value="<%= prioridade.id %>" <%= Number(dados.priorityId) === Number(prioridade.id) ? 'selected' : '' %>>
+                        <%= prioridade.name %>
+                    </option>
+                <% }) %>
+            </select>
+
+            <label for="service_id">Serviço relacionado:</label>
+            <select id="service_id" name="service_id">
+                <option value="">Nenhum serviço específico</option>
+                <% (servicos || []).forEach(servico => { %>
+                    <option value="<%= servico.id %>" <%= Number(dados.serviceId) === Number(servico.id) ? 'selected' : '' %>>
+                        <%= servico.name %>
+                    </option>
+                <% }) %>
             </select>
             
             <button type="submit" class="btn-principal">Enviar Chamado</button>
